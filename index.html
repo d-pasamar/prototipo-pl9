@@ -398,18 +398,36 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
       <button class="proj-close" onclick="closeProjection()">✕ CERRAR</button>
     </div>
     <div class="proj-body">
-      <div class="proj-lung">🫁</div>
-      <div class="proj-grid">
-        <div class="proj-quadrant">LSD</div>
-        <div class="proj-quadrant">LSI</div>
-        <div class="proj-quadrant highlight">LID</div>
-        <div class="proj-quadrant">LII</div>
-      </div>
-      <div class="proj-info">
-        ⚠ Opacidad residual en LID señalizada<br>
-        Pinza para zoom · Muñeca para rotar
-      </div>
-      <div class="proj-zoom">
+
+  <img
+    src="img/rx-torax.jpg"
+    class="proj-image"
+    id="rx-image"
+  >
+
+  <div class="proj-zoom">
+
+    <button
+      class="proj-zoom-btn"
+      onclick="projZoom(-10)">
+      −
+    </button>
+
+    <div
+      class="proj-zoom-level"
+      id="proj-zoom-val">
+      100%
+    </div>
+
+    <button
+      class="proj-zoom-btn"
+      onclick="projZoom(10)">
+      +
+    </button>
+
+  </div>
+
+</div>
         <button class="proj-zoom-btn" onclick="projZoom(-10)">−</button>
         <div class="proj-zoom-level" id="proj-zoom-val">100%</div>
         <button class="proj-zoom-btn" onclick="projZoom(10)">+</button>
@@ -727,11 +745,11 @@ function projZoom(delta) {
   document.getElementById('proj-zoom-val')
     .textContent = projZoomLevel + '%';
 
-  const inner =
-    document.querySelector('.proj-body');
+  const img =
+  document.getElementById('rx-image');
 
-  inner.style.transform =
-    `scale(${projZoomLevel / 100})`;
+img.style.transform =
+  `scale(${projZoomLevel / 100})`;
 }
 
 </script>
