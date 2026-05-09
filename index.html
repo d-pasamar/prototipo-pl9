@@ -107,7 +107,7 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 
 /* Screen panels */
 .screen { display:none; height:100%; overflow-y:auto; padding:8px; }
-.screen.active { display:flex; flex-direction:column; gap:8px; }
+.screen.active { display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:70vw; -webkit-overflow-scrolling:touch; touch-action:pan-y; }
 
 /* Shared panel style */
 .panel {
