@@ -1,80 +1,53 @@
 <!DOCTYPE html>
-<html lang="es">
+<html>
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-    <title>BHF-XR · HUD Médico Final</title>
+    <title>BHF-XR · Prototipo Final</title>
     <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
     <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@600&display=swap');
-        body { margin: 0; overflow: hidden; font-family: 'Rajdhani', sans-serif; background: #000; }
-        
-        /* Botonera Inferior */
+        body { margin: 0; overflow: hidden; font-family: sans-serif; }
         .nav {
             position: fixed; bottom: 20px; left: 0; right: 0;
             display: flex; justify-content: center; gap: 10px; z-index: 1000;
         }
-        .nav button {
-            background: rgba(0,229,255,0.1); border: 1px solid #00e5ff;
-            color: #00e5ff; padding: 12px 20px; border-radius: 30px;
-            font-family: 'Rajdhani'; font-weight: bold; cursor: pointer;
-        }
-        .nav button.active { background: #00e5ff; color: #000; }
-
-        /* Pantalla de carga */
-        #loading {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #000810; display: flex; align-items: center;
-            justify-content: center; z-index: 2000; color: #00e5ff;
+        button {
+            padding: 12px; background: #00e5ff; border: none; color: #000;
+            font-weight: bold; border-radius: 5px; cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-    <div id="loading">
-        <button style="padding:20px; background:none; border:2px solid #00e5ff; color:#00e5ff; cursor:pointer;" 
-                onclick="this.parentElement.style.display='none'">
-            INICIAR INTERFAZ MÉDICA
-        </button>
-    </div>
-
     <div class="nav">
-        <button id="b0" class="active" onclick="show(0)">PACIENTES</button>
-        <button id="b1" onclick="show(1)">HISTORIAL</button>
-        <button id="b2" onclick="show(2)">IMAGEN</button>
+        <button onclick="cambiar(0)">PACIENTES</button>
+        <button onclick="cambiar(1)">HISTORIAL</button>
+        <button onclick="cambiar(2)">IMAGEN</button>
     </div>
 
     <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
         
         <a-marker preset="hiro">
-            <a-entity id="hud-master" rotation="0 0 0" position="0 0 0">
+            <a-entity id="interfaz" rotation="-90 0 0" position="0 0 0">
                 
-                <a-box width="2.2" height="1.4" depth="0.05" color="#001522" opacity="0.95" position="0 0 -0.03"></a-box>
+                <a-box width="2" height="1.2" depth="0.1" color="#001522" opacity="0.9" position="0 0 -0.05"></a-box>
 
-                <a-entity id="p0" visible="true">
-                    <a-text value="TRIAGE EN TIEMPO REAL" color="#00e5ff" position="-1 0.5 0.05" width="4" font="mozillavr"></a-text>
-                    <a-text value="1. Garcia Lopez, J. - ESTABLE\n2. Rodriguez, M. - URGENTE\n3. Fernandez, C. - ESPERA" 
-                            color="white" position="-1 0 0.05" width="3.5" font="mozillavr"></a-text>
+                <a-entity id="sec0" visible="true">
+                    <a-text value="LISTADO DE PACIENTES" color="#00e5ff" position="-0.9 0.4 0.06" width="3"></a-text>
+                    <a-text value="> Garcia Lopez, J. (BOX 1)\n> Rodriguez, M. (ESPERA)" position="-0.9 0 0.06" width="2.5"></a-text>
                 </a-entity>
 
-                <a-entity id="p1" visible="false">
-                    <a-text value="HISTORIAL: GARCIA LOPEZ" color="#76ff03" position="-1 0.5 0.05" width="4"></a-text>
-                    <a-text value="Alergias: Penicilina\nUltima Rx: 12/03/2026\nSaturacion SpO2: 94%" 
-                            color="white" position="-1 0 0.05" width="3.5"></a-text>
+                <a-entity id="sec1" visible="false">
+                    <a-text value="HISTORIAL MEDICO" color="#76ff03" position="-0.9 0.4 0.06" width="3"></a-text>
+                    <a-text value="Saturacion: 94%\nFC: 72 bpm\nAlergias: PENICILINA" position="-0.9 0 0.06" width="2.5"></a-text>
                 </a-entity>
 
-                <a-entity id="p2" visible="false">
-                    <a-text value="VISOR RADIOLOGICO" color="#ffab00" position="-1 0.5 0.05" width="4"></a-text>
-                    <a-box color="#111" width="1.2" height="0.8" depth="0.02" position="0 -0.1 0.05">
-                        <a-text value="[ IMAGEN RX TORAX ]\n\nOpacidad residual LID" align="center" color="#00e5ff" width="2"></a-text>
-                    </a-box>
+                <a-entity id="sec2" visible="false">
+                    <a-text value="VISOR RADIOLOGICO" color="#ffab00" position="-0.9 0.4 0.06" width="3"></a-text>
+                    <a-plane color="#111" width="1" height="0.6" position="0 -0.1 0.07">
+                        <a-text value="[ RX TORAX ]" align="center" width="2"></a-text>
+                    </a-plane>
                 </a-entity>
-
-                <a-sphere radius="0.03" color="#00e5ff" position="-1.1 0.7 0.05"></a-sphere>
-                <a-sphere radius="0.03" color="#00e5ff" position="1.1 0.7 0.05"></a-sphere>
-                <a-sphere radius="0.03" color="#00e5ff" position="-1.1 -0.7 0.05"></a-sphere>
-                <a-sphere radius="0.03" color="#00e5ff" position="1.1 -0.7 0.05"></a-sphere>
 
             </a-entity>
         </a-marker>
@@ -83,15 +56,10 @@
     </a-scene>
 
     <script>
-        function show(id) {
-            // Ocultar todos y quitar clases activas
+        function cambiar(id) {
             for(let i=0; i<3; i++) {
-                document.getElementById('p'+i).setAttribute('visible', 'false');
-                document.getElementById('b'+i).classList.remove('active');
+                document.getElementById('sec'+i).setAttribute('visible', i === id);
             }
-            // Mostrar el seleccionado
-            document.getElementById('p'+id).setAttribute('visible', 'true');
-            document.getElementById('b'+id).classList.add('active');
         }
     </script>
 </body>
