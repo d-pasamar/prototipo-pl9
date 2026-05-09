@@ -10,6 +10,8 @@
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
 
+.screen.active { overflow-y: auto; max-height: calc(100vh - 130px); -webkit-overflow-scrolling: touch; }
+
 :root {
   --cyan: #00e5ff;
   --cyan-dim: rgba(0,229,255,0.25);
@@ -395,6 +397,12 @@ async function startAR() {
     const video = document.getElementById('camera');
     video.srcObject = stream;
     video.play();
+
+    if (document.documentElement.requestFullscreen) {
+      document.documentElement.requestFullscreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen();
+    }
 
     // Show HUD after short delay (simulating marker detection)
     setTimeout(() => {
