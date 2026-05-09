@@ -3,255 +3,141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<title>BHF-XR · AR Médica Interactiva</title>
+<title>BHF-XR · HUD Médico Pro</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;600;700&family=Share+Tech+Mono&display=swap');
 
 :root {
   --cyan: #00e5ff;
-  --cyan-dim: rgba(0,229,255,0.25);
-  --cyan-glow: rgba(0,229,255,0.12);
   --green: #76ff03;
-  --green-dim: rgba(118,255,3,0.25);
   --amber: #ffab00;
-  --red: #ff1744;
-  --panel: rgba(0,20,35,0.82);
-  --panel-solid: rgba(0,25,40,0.9);
   --border: rgba(0,229,255,0.3);
-  --text: rgba(225,240,255,0.95);
-  --text-dim: rgba(170,200,220,0.6);
+  --panel: rgba(0,20,35,0.85);
 }
 
 * { margin:0; padding:0; box-sizing:border-box; }
-body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; color:var(--text); }
+body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; color:white; }
 
-#camera { position:fixed; top:0;left:0;width:100%;height:100%; object-fit:cover; z-index:1; }
+/* Cámara de fondo */
+#camera { position:fixed; top:0; left:0; width:100%; height:100%; object-fit:cover; z-index:1; }
 
-.scanline {
-  position:fixed; top:0;left:0;right:0;bottom:0; z-index:2; pointer-events:none;
-  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,229,255,0.012) 3px, rgba(0,229,255,0.012) 6px);
+/* Capa de la derecha: Donde aparecerá la imagen grande */
+#right-projection {
+  position: fixed; top: 10%; right: 5%; width: 50%; height: 75%;
+  z-index: 100; display: none;
+  border: 1px solid var(--cyan); background: rgba(0,20,40,0.6);
+  backdrop-filter: blur(10px); border-radius: 12px;
+  box-shadow: 0 0 30px rgba(0,229,255,0.2);
+  padding: 10px; animation: slideIn 0.3s ease-out;
 }
+@keyframes slideIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
 
-/* ===== TOP BAR ===== */
-.top-bar {
-  position:fixed; top:0; left:0; width:38%; z-index:100;
-  display:flex; justify-content:space-between; align-items:center;
-  padding:6px 12px;
-  background:rgba(0,10,20,0.85);
-  backdrop-filter:blur(10px);
-  border-bottom:1px solid var(--border);
-  border-right:1px solid var(--border);
-}
-.top-bar .logo { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--cyan); letter-spacing:2px; }
-.top-bar .status { font-size:10px; color:var(--text-dim); font-family:'Share Tech Mono',monospace; }
-.dot { display:inline-block;width:6px;height:6px;background:var(--green);border-radius:50%;margin-right:4px; animation:pulse 2s infinite; }
-@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+#right-projection img { width: 100%; height: 100%; object-fit: contain; }
+.close-hint { position: absolute; bottom: 10px; width: 100%; text-align: center; font-size: 12px; color: var(--cyan); font-family: 'Share Tech Mono'; }
 
-/* ===== VITALS HUD ===== */
-.vitals-hud {
-  position:fixed; top:8px; right:10px; z-index:100;
-  display:flex; gap:6px;
-  pointer-events:none;
-  opacity:0; transition:opacity 0.5s;
-}
-.vitals-hud.visible { opacity:1; }
-.vh-item {
-  text-align:center; padding:5px 8px;
-  background:rgba(0,20,35,0.75); border:1px solid var(--border); border-radius:8px;
-  backdrop-filter:blur(6px);
-}
-.vh-item .vh-val { font-family:'Share Tech Mono',monospace; font-size:16px; font-weight:700; color:var(--green); }
-.vh-item .vh-label { font-size:8px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
-.vh-patient {
-  font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--cyan);
-  background:rgba(0,20,35,0.75); border:1px solid var(--border); border-radius:8px;
-  padding:5px 8px; display:flex; align-items:center; backdrop-filter:blur(6px);
-}
-
-/* ===== LEFT HUD PANEL ===== */
+/* HUD Izquierdo (38% de ancho) */
 .hud {
-  position:fixed; top:32px; left:0; width:38%; bottom:0; z-index:50;
-  background:var(--panel);
-  border-right:1px solid var(--border);
-  backdrop-filter:blur(8px);
-  opacity:0; transform:translateX(-10px);
-  transition:opacity 0.4s, transform 0.4s;
-  pointer-events:none;
-  display:flex; flex-direction:column;
+  position:fixed; top:0; left:0; width:38%; height:100%; z-index:50;
+  background:var(--panel); border-right:1px solid var(--border);
+  display:flex; flex-direction:column; opacity:0; transition: opacity 0.5s;
 }
-.hud.visible { opacity:1; transform:translateX(0); pointer-events:auto; }
+.hud.visible { opacity:1; }
 
-.panel-nav { display:flex; gap:3px; padding:6px 8px; border-bottom:1px solid var(--border); flex-shrink:0; }
-.nav-btn {
-  flex:1; background:transparent; border:1px solid var(--border); color:var(--text-dim);
-  font-family:'Rajdhani',sans-serif; font-size:10px; font-weight:600;
-  padding:5px 4px; border-radius:12px; cursor:pointer; transition:all 0.3s;
-  text-transform:uppercase; letter-spacing:0.5px;
+/* Navegación y Pantallas (Scroll original) */
+.panel-nav { display:flex; padding:10px; gap:5px; border-bottom:1px solid var(--border); }
+.nav-btn { flex:1; padding:8px; font-size:10px; background:none; border:1px solid var(--border); color:var(--cyan); border-radius:10px; cursor:pointer; }
+.nav-btn.active { background: rgba(0,229,255,0.2); font-weight:bold; }
+
+.screen { display:none; padding:15px; overflow-y:auto; flex:1; }
+.screen.active { display:flex; flex-direction:column; gap:10px; }
+
+/* Estilo de los paneles internos */
+.panel { background:rgba(0,40,60,0.5); border:1px solid var(--border); border-radius:8px; padding:12px; margin-bottom:10px; }
+.panel-title { font-size:12px; color:var(--cyan); text-transform:uppercase; margin-bottom:8px; letter-spacing:1px; }
+
+/* El cuadro disparador en la sección Imagen */
+.xray-trigger {
+  width:100%; height:120px; border:2px dashed var(--cyan); border-radius:8px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  cursor:pointer; background: rgba(0,229,255,0.05); transition: 0.3s;
 }
-.nav-btn.active { background:var(--cyan-glow); border-color:var(--cyan); color:var(--cyan); }
+.xray-trigger:active { background: rgba(0,229,255,0.2); }
 
-.screen {
-  display:none; padding:8px; pointer-events:auto; overflow-y:auto; flex:1;
-  -webkit-overflow-scrolling:touch; touch-action:pan-y;
-}
-.screen.active { display:flex; flex-direction:column; gap:6px; }
-
-.panel { background:rgba(0,30,50,0.6); border:1px solid var(--border); border-radius:8px; padding:10px; }
-.panel-title { font-size:10px; text-transform:uppercase; letter-spacing:2px; color:var(--cyan); margin-bottom:6px; font-weight:600; }
-
-/* Image viewer interactivo */
-.xray-box {
-  width:100%; height:140px; background:rgba(0,30,50,0.9);
-  border-radius:6px; display:flex; align-items:center; justify-content:center;
-  border:1px solid var(--border); position:relative; overflow:hidden;
-  cursor:pointer; transition: all 0.3s;
-}
-.xray-box:active { transform: scale(0.98); background: rgba(0,50,70,1); }
-#xray-img { display:none; width:100%; height:100%; object-fit: contain; }
-
-.xray-label { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--text-dim); text-align:center; z-index:1; }
-.xray-label span { display:block; font-size:30px; opacity:0.3; margin-bottom:4px; }
-
-/* Otros estilos del panel */
-.p-card { background:rgba(0,35,55,0.6); border:1px solid var(--border); border-radius:6px; padding:8px 10px; display:flex; justify-content:space-between; align-items:center; border-left:3px solid var(--cyan); margin-bottom:4px; }
-.badge { font-size:8px; padding:2px 6px; border-radius:6px; text-transform:uppercase; font-weight:700; }
-.badge.go { background:rgba(118,255,3,0.12); color:var(--green); border:1px solid var(--green-dim); }
-.vitals-row { display:flex; gap:4px; }
-.vital { flex:1; text-align:center; padding:6px 3px; background:rgba(0,35,55,0.6); border:1px solid var(--border); border-radius:6px; }
-.vital .v-val { font-family:'Share Tech Mono',monospace; font-size:16px; font-weight:700; color:var(--green); }
-.finding { padding:4px 0; border-bottom:1px solid rgba(0,229,255,0.08); font-size:11px; }
-
-/* Intro */
-.intro-overlay { position:fixed; top:0;left:0;right:0;bottom:0; z-index:200; background:rgba(0,8,16,0.95); display:flex; align-items:center; justify-content:center; }
-.intro-box { text-align:center; padding:28px; max-width:300px; border:1px solid var(--border); border-radius:16px; background:var(--panel-solid); }
-.start-btn { background:var(--cyan-glow); border:1px solid var(--cyan); color:var(--cyan); padding:10px 28px; border-radius:25px; cursor:pointer; font-family:'Share Tech Mono'; }
-
+/* Pantalla de inicio */
+.intro { position:fixed; inset:0; background:#000810; z-index:500; display:flex; align-items:center; justify-content:center; flex-direction:column; }
+.start-btn { padding:15px 40px; border:1px solid var(--cyan); background:none; color:var(--cyan); border-radius:30px; cursor:pointer; font-family:'Share Tech Mono'; }
 </style>
 </head>
 <body>
 
 <video id="camera" autoplay playsinline muted></video>
-<div class="scanline"></div>
 
-<div class="intro-overlay" id="intro">
-  <div class="intro-box">
-    <h2>⬡ BHF-XR</h2>
-    <p>Prototipo AR — Interfaz Médica<br><br>
-    Pulsa INICIAR para activar el HUD.<br>
-    En la sección Imagen, <b>toca el visor</b> para revelar la radiografía.</p>
-    <button class="start-btn" onclick="startAR()">INICIAR AR</button>
-  </div>
+<div id="right-projection" onclick="this.style.display='none'">
+  <img src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Chest_Xray_PA_3-14-2010.png/640px-Chest_Xray_PA_3-14-2010.png" alt="Xray">
+  <div class="close-hint">TOCA PARA CERRAR</div>
 </div>
 
-<div class="top-bar" id="topbar" style="display:none;">
-  <div class="logo">⬡ BHF-XR</div>
-  <div class="status"><span class="dot"></span>Dra. Martín</div>
-</div>
-
-<div class="vitals-hud" id="vitals-hud">
-  <div class="vh-patient">👤 J. García</div>
-  <div class="vh-item"><div class="vh-val">72</div><div class="vh-label">FC</div></div>
-  <div class="vh-item warn"><div class="vh-val">94%</div><div class="vh-label">SpO₂</div></div>
+<div class="intro" id="intro">
+  <h2 style="color:var(--cyan); margin-bottom:20px;">⬡ BHF-XR</h2>
+  <button class="start-btn" onclick="startAR()">INICIAR AR</button>
 </div>
 
 <div class="hud" id="hud">
   <div class="panel-nav">
-    <button class="nav-btn active" id="nb0" onclick="goTo(0)">Pacientes</button>
-    <button class="nav-btn" id="nb1" onclick="goTo(1)">Historial</button>
-    <button class="nav-btn" id="nb2" onclick="goTo(2)">Dictado</button>
-    <button class="nav-btn" id="nb3" onclick="goTo(3)">Imagen</button>
+    <button class="nav-btn active" id="nb0" onclick="goTo(0)">PACIENTES</button>
+    <button class="nav-btn" id="nb1" onclick="goTo(1)">HISTORIAL</button>
+    <button class="nav-btn" id="nb3" onclick="goTo(3)">IMAGEN</button>
   </div>
 
   <div class="screen active" id="s0">
-    <div class="panel"><div class="panel-title">📋 Pacientes del día</div></div>
-    <div class="p-card" onclick="goTo(1)">
-      <div><div class="p-name">Juan García López</div><div class="p-info">68a · M</div></div>
-      <div class="badge go">En curso</div>
-    </div>
+    <div class="panel"><div class="panel-title">PACIENTES</div><p>Juan García López (68a)</p></div>
   </div>
 
   <div class="screen" id="s1">
-    <div class="panel"><div class="panel-title">Historial: J. García</div></div>
-    <div class="vitals-row">
-      <div class="vital"><div class="v-val">72</div><div class="v-label">FC</div></div>
-      <div class="vital"><div class="v-val">136/82</div><div class="v-label">TA</div></div>
-    </div>
-    <div class="panel" onclick="goTo(3)" style="cursor:pointer; border-color:var(--cyan)">
-      <div class="panel-title" style="color:var(--cyan)">🫁 Ver Rx Tórax PA →</div>
-    </div>
-  </div>
-
-  <div class="screen" id="s2">
-    <div class="panel"><div class="panel-title">🎤 Dictado IA</div>
-      <div class="transcript">Paciente 68a, mejoría post-neumonía. Sin disnea.</div>
-    </div>
+    <div class="panel"><div class="panel-title">HISTORIAL</div><p>Neumonía previa (12/03/2026)</p></div>
   </div>
 
   <div class="screen" id="s3">
-    <div class="panel"><div class="panel-title">🫁 Visor Radiológico</div></div>
-    
-    <div class="xray-box" onclick="toggleXray()">
-      <img id="xray-img" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a1/Chest_Xray_PA_3-14-2010.png/640px-Chest_Xray_PA_3-14-2010.png" alt="Chest X-ray">
-      <div class="xray-label" id="xray-placeholder">
-        <span>🫁</span>
-        TOCA PARA REVELAR<br>
-        <span style="font-size:9px;color:var(--cyan);">[ Sistema de Escaneo Listo ]</span>
+    <div class="panel">
+      <div class="panel-title">ESTUDIO RADIOLÓGICO</div>
+      <div class="xray-trigger" onclick="projectXray()">
+        <span style="font-size:30px;">🫁</span>
+        <p style="font-size:12px; margin-top:5px;">TOCA PARA PROYECTAR</p>
       </div>
     </div>
-
     <div class="panel">
-      <div class="panel-title">Hallazgos</div>
-      <div class="finding" style="color:var(--amber)">⚠ Opacidad residual LID</div>
-      <div class="finding" style="color:var(--green)">✓ Silueta cardíaca normal</div>
+      <div class="panel-title">HALLAZGOS IA</div>
+      <p style="color:var(--amber); font-size:14px;">⚠ Opacidad residual LID</p>
     </div>
   </div>
 </div>
 
 <script>
 async function startAR() {
-  document.getElementById('intro').classList.add('hidden');
-  document.getElementById('topbar').style.display = 'flex';
+  document.getElementById('intro').style.display = 'none';
   document.getElementById('hud').classList.add('visible');
-  document.getElementById('vitals-hud').classList.add('visible');
-
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment' }
-    });
+    const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
     document.getElementById('camera').srcObject = stream;
-  } catch (err) {
-    console.log("Modo demo activo");
-  }
+  } catch (err) { console.log("Demo sin cámara"); }
 }
 
 function goTo(index) {
   for (let i = 0; i < 4; i++) {
-    document.getElementById('s' + i).classList.remove('active');
-    document.getElementById('nb' + i).classList.remove('active');
+    const s = document.getElementById('s' + i);
+    const n = document.getElementById('nb' + i);
+    if(s) s.classList.remove('active');
+    if(n) n.classList.remove('active');
   }
   document.getElementById('s' + index).classList.add('active');
   document.getElementById('nb' + index).classList.add('active');
-  
-  // Al cambiar de pantalla, reseteamos la imagen por si acaso
-  const img = document.getElementById('xray-img');
-  const placeholder = document.getElementById('xray-placeholder');
-  if(img) { img.style.display = 'none'; placeholder.style.display = 'block'; }
+  // Al cambiar de pantalla, cerramos la proyección por si estaba abierta
+  document.getElementById('right-projection').style.display = 'none';
 }
 
-function toggleXray() {
-  const img = document.getElementById('xray-img');
-  const placeholder = document.getElementById('xray-placeholder');
-  
-  if (img.style.display === 'none' || img.style.display === '') {
-    img.style.display = 'block';
-    placeholder.style.display = 'none';
-  } else {
-    img.style.display = 'none';
-    placeholder.style.display = 'block';
-  }
+function projectXray() {
+  const proj = document.getElementById('right-projection');
+  proj.style.display = 'block';
 }
 </script>
 </body>
