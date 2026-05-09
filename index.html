@@ -9,8 +9,6 @@
 <style>
   * { margin: 0; padding: 0; }
   body { overflow: hidden; font-family: sans-serif; }
-
-  /* Overlay UI */
   .overlay {
     position: fixed;
     top: 0; left: 0; right: 0;
@@ -21,111 +19,89 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    padding: 12px 16px;
-    background: rgba(0,10,20,0.75);
-    backdrop-filter: blur(8px);
-    border-bottom: 1px solid rgba(0,229,255,0.2);
+    padding: 10px 14px;
+    background: rgba(0,10,20,0.85);
+    border-bottom: 2px solid rgba(0,229,255,0.4);
   }
   .top-bar .logo {
     font-family: monospace;
-    font-size: 11px;
+    font-size: 12px;
     color: #00e5ff;
     letter-spacing: 2px;
   }
   .top-bar .status {
     font-size: 11px;
-    color: rgba(200,230,255,0.7);
+    color: rgba(200,230,255,0.8);
   }
   .status-dot {
     display: inline-block;
-    width: 6px; height: 6px;
+    width: 7px; height: 7px;
     background: #76ff03;
     border-radius: 50%;
-    margin-right: 4px;
-    animation: blink-dot 2s infinite;
+    margin-right: 5px;
+    animation: bd 2s infinite;
   }
-  @keyframes blink-dot { 0%,100%{opacity:1} 50%{opacity:0.3} }
-
-  /* Bottom nav */
+  @keyframes bd { 0%,100%{opacity:1} 50%{opacity:0.3} }
   .bottom-nav {
     position: fixed;
     bottom: 0; left: 0; right: 0;
     z-index: 1000;
     display: flex;
     justify-content: center;
-    padding: 10px;
-    background: rgba(0,10,20,0.8);
-    backdrop-filter: blur(8px);
-    border-top: 1px solid rgba(0,229,255,0.2);
-    gap: 6px;
+    padding: 8px;
+    background: rgba(0,10,20,0.9);
+    border-top: 2px solid rgba(0,229,255,0.4);
+    gap: 5px;
     pointer-events: auto;
   }
   .nav-btn {
-    background: rgba(0,229,255,0.08);
-    border: 1px solid rgba(0,229,255,0.2);
-    color: rgba(200,230,255,0.7);
+    background: rgba(0,229,255,0.06);
+    border: 1px solid rgba(0,229,255,0.3);
+    color: rgba(200,230,255,0.8);
     font-size: 11px;
-    padding: 8px 14px;
-    border-radius: 20px;
+    padding: 8px 12px;
+    border-radius: 18px;
     cursor: pointer;
-    transition: all 0.3s;
     font-family: monospace;
+    transition: all 0.3s;
   }
-  .nav-btn.active, .nav-btn:active {
-    background: rgba(0,229,255,0.15);
+  .nav-btn.active {
+    background: rgba(0,229,255,0.18);
     border-color: #00e5ff;
     color: #00e5ff;
-    box-shadow: 0 0 12px rgba(0,229,255,0.2);
+    box-shadow: 0 0 10px rgba(0,229,255,0.3);
   }
-
-  /* Instruction overlay */
   .instructions {
     position: fixed;
     top: 50%; left: 50%;
     transform: translate(-50%, -50%);
     z-index: 999;
-    background: rgba(0,10,20,0.9);
-    border: 1px solid rgba(0,229,255,0.3);
+    background: rgba(0,10,20,0.95);
+    border: 2px solid rgba(0,229,255,0.4);
     border-radius: 16px;
-    padding: 30px;
+    padding: 28px;
     text-align: center;
     color: #00e5ff;
-    max-width: 320px;
+    max-width: 300px;
     pointer-events: auto;
-    backdrop-filter: blur(10px);
   }
-  .instructions h2 {
-    font-size: 18px;
-    margin-bottom: 12px;
-    letter-spacing: 2px;
-  }
-  .instructions p {
-    font-size: 13px;
-    color: rgba(200,230,255,0.7);
-    line-height: 1.6;
-    margin-bottom: 16px;
-  }
-  .instructions .start-btn {
-    background: rgba(0,229,255,0.12);
-    border: 1px solid #00e5ff;
+  .instructions h2 { font-size: 20px; margin-bottom: 10px; letter-spacing: 3px; }
+  .instructions p { font-size: 13px; color: rgba(200,230,255,0.7); line-height: 1.6; margin-bottom: 14px; }
+  .start-btn {
+    background: rgba(0,229,255,0.15);
+    border: 2px solid #00e5ff;
     color: #00e5ff;
-    padding: 10px 30px;
+    padding: 12px 35px;
     border-radius: 25px;
-    font-size: 14px;
+    font-size: 15px;
     cursor: pointer;
     font-family: monospace;
     letter-spacing: 1px;
-    transition: all 0.3s;
-  }
-  .instructions .start-btn:active {
-    background: rgba(0,229,255,0.3);
   }
   .hidden { display: none !important; }
-
-  /* Gesture hint */
   .gesture-bar {
     position: fixed;
-    bottom: 55px; left: 0; right: 0;
+    bottom: 52px; left: 0; right: 0;
     text-align: center;
     z-index: 999;
     pointer-events: none;
@@ -133,215 +109,214 @@
   .gesture-bar span {
     font-family: monospace;
     font-size: 10px;
-    color: rgba(0,229,255,0.5);
-    background: rgba(0,10,20,0.6);
-    padding: 4px 12px;
-    border-radius: 10px;
+    color: rgba(0,229,255,0.6);
+    background: rgba(0,10,20,0.7);
+    padding: 4px 10px;
+    border-radius: 8px;
   }
 </style>
 </head>
 <body>
 
-<!-- Instruction overlay -->
 <div class="instructions" id="intro">
-  <h2>⬡ BHF-XR</h2>
-  <p>Prototipo AR — Interfaz Médica<br><br>
-  Apunta la cámara al marcador <b>HIRO</b> impreso.<br>
-  Los paneles HUD se proyectarán sobre él.<br><br>
-  Usa los botones inferiores para cambiar de pantalla.</p>
+  <h2>BHF-XR</h2>
+  <p>Prototipo AR — Interfaz Medica<br><br>
+  Apunta la camara al marcador <b>HIRO</b>.<br>
+  Los paneles se proyectaran sobre el.<br><br>
+  Acerca el movil al marcador (20-30cm).</p>
   <button class="start-btn" onclick="startAR()">INICIAR AR</button>
 </div>
 
-<!-- Top bar overlay -->
 <div class="overlay" id="topbar" style="display:none;">
   <div class="top-bar">
-    <div class="logo">⬡ BHF-XR</div>
-    <div class="status"><span class="status-dot"></span>Dra. Martín · AR activo</div>
+    <div class="logo">BHF-XR</div>
+    <div class="status"><span class="status-dot"></span>Dra. Martin</div>
   </div>
 </div>
 
-<!-- Gesture hint -->
 <div class="gesture-bar" id="ghint" style="display:none;">
-  <span>👋 Apunta al marcador HIRO · Cambia pantalla abajo</span>
+  <span>Apunta al marcador HIRO a 20-30cm</span>
 </div>
 
-<!-- Bottom nav -->
 <div class="bottom-nav" id="nav" style="display:none;">
-  <button class="nav-btn active" onclick="showPanel(0, this)">📋 Pacientes</button>
-  <button class="nav-btn" onclick="showPanel(1, this)">📁 Historial</button>
-  <button class="nav-btn" onclick="showPanel(2, this)">🎤 Dictado</button>
-  <button class="nav-btn" onclick="showPanel(3, this)">🫁 Imagen</button>
+  <button class="nav-btn active" onclick="showPanel(0, this)">Pacientes</button>
+  <button class="nav-btn" onclick="showPanel(1, this)">Historial</button>
+  <button class="nav-btn" onclick="showPanel(2, this)">Dictado</button>
+  <button class="nav-btn" onclick="showPanel(3, this)">Imagen</button>
 </div>
 
-<!-- A-Frame AR scene -->
 <a-scene
   embedded
   arjs="sourceType: webcam; debugUIEnabled: false; detectionMode: mono_and_matrix; matrixCodeType: 3x3;"
-  renderer="logarithmicDepthBuffer: true; colorManagement: true;"
+  renderer="logarithmicDepthBuffer: true; antialias: true;"
   vr-mode-ui="enabled: false"
+  id="arscene"
+  style="display:none;"
 >
   <a-marker preset="hiro" id="marker">
 
-    <!-- Panel 0: Patient List -->
-    <a-entity id="panel-0" position="0 0 0.1" rotation="0 0 0" visible="true">
-      <!-- Background -->
-      <a-plane width="2.4" height="1.6" color="#001420" opacity="0.88" side="double"></a-plane>
-      <a-plane width="2.4" height="1.6" color="#00e5ff" opacity="0.05" side="double" position="0 0 0.001"></a-plane>
-      <!-- Border -->
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 0.8 0.002" side="double"></a-plane>
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 -0.8 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="-1.2 0 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="1.2 0 0.002" side="double"></a-plane>
-      <!-- Title -->
-      <a-text value="PACIENTES DEL DIA" color="#00e5ff" width="2" position="-1.05 0.65 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Patient 1 -->
-      <a-plane width="2.2" height="0.28" color="#003040" opacity="0.6" position="0 0.38 0.005" side="double"></a-plane>
-      <a-plane width="0.02" height="0.28" color="#76ff03" opacity="0.8" position="-1.1 0.38 0.006" side="double"></a-plane>
-      <a-text value="Juan Garcia Lopez · 68a" color="#e0f0ff" width="1.8" position="-1.0 0.42 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Revision neumologia" color="#ffab00" width="1.5" position="-1.0 0.34 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="09:30 EN CURSO" color="#76ff03" width="1.2" position="0.6 0.38 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Patient 2 -->
-      <a-plane width="2.2" height="0.28" color="#003040" opacity="0.4" position="0 0.05 0.005" side="double"></a-plane>
-      <a-plane width="0.02" height="0.28" color="#00e5ff" opacity="0.5" position="-1.1 0.05 0.006" side="double"></a-plane>
-      <a-text value="Maria Rodriguez · 45a" color="#e0f0ff" width="1.8" position="-1.0 0.09 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Dolor toracico" color="#ffab00" width="1.5" position="-1.0 0.01 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="10:15 ESPERANDO" color="#00e5ff" width="1.2" position="0.6 0.05 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Patient 3 -->
-      <a-plane width="2.2" height="0.28" color="#003040" opacity="0.4" position="0 -0.28 0.005" side="double"></a-plane>
-      <a-plane width="0.02" height="0.28" color="#00e5ff" opacity="0.5" position="-1.1 -0.28 0.006" side="double"></a-plane>
-      <a-text value="Carlos Fernandez · 72a" color="#e0f0ff" width="1.8" position="-1.0 -0.24 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="EPOC estadio III" color="#ffab00" width="1.5" position="-1.0 -0.32 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="11:00 ESPERANDO" color="#00e5ff" width="1.2" position="0.6 -0.28 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Patient 4 -->
-      <a-plane width="2.2" height="0.28" color="#003040" opacity="0.4" position="0 -0.61 0.005" side="double"></a-plane>
-      <a-plane width="0.02" height="0.28" color="#00e5ff" opacity="0.5" position="-1.1 -0.61 0.006" side="double"></a-plane>
-      <a-text value="Ana Moreno Ruiz · 34a" color="#e0f0ff" width="1.8" position="-1.0 -0.57 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Anemia ferropenica" color="#ffab00" width="1.5" position="-1.0 -0.65 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="11:45 ESPERANDO" color="#00e5ff" width="1.2" position="0.6 -0.61 0.01" font="monoid" anchor="left"></a-text>
+    <!-- PANEL 0: PACIENTES -->
+    <a-entity id="panel-0" position="0 0.3 0" rotation="-90 0 0" scale="1.8 1.8 1.8" visible="true">
+      <a-plane width="3" height="2.2" color="#001825" opacity="0.95" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 1.1 0.003" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 -1.1 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="-1.5 0 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="1.5 0 0.003" side="double"></a-plane>
+
+      <a-text value="PACIENTES DEL DIA" color="#00e5ff" width="3.5" position="-1.35 0.9 0.01" anchor="left"></a-text>
+
+      <a-plane width="2.8" height="0.38" color="#003545" opacity="0.8" position="0 0.52 0.005" side="double"></a-plane>
+      <a-plane width="0.04" height="0.38" color="#76ff03" opacity="1" position="-1.38 0.52 0.007" side="double"></a-plane>
+      <a-text value="Juan Garcia Lopez  68a" color="#ffffff" width="3.2" position="-1.3 0.58 0.01" anchor="left"></a-text>
+      <a-text value="Revision neumologia" color="#ffab00" width="2.8" position="-1.3 0.47 0.01" anchor="left"></a-text>
+      <a-text value="09:30  EN CURSO" color="#76ff03" width="2.5" position="0.5 0.52 0.01" anchor="left"></a-text>
+
+      <a-plane width="2.8" height="0.38" color="#002535" opacity="0.7" position="0 0.08 0.005" side="double"></a-plane>
+      <a-plane width="0.04" height="0.38" color="#00e5ff" opacity="0.7" position="-1.38 0.08 0.007" side="double"></a-plane>
+      <a-text value="Maria Rodriguez  45a" color="#e0f0ff" width="3.2" position="-1.3 0.14 0.01" anchor="left"></a-text>
+      <a-text value="Dolor toracico" color="#ffab00" width="2.8" position="-1.3 0.03 0.01" anchor="left"></a-text>
+      <a-text value="10:15  ESPERANDO" color="#00e5ff" width="2.5" position="0.5 0.08 0.01" anchor="left"></a-text>
+
+      <a-plane width="2.8" height="0.38" color="#002535" opacity="0.7" position="0 -0.36 0.005" side="double"></a-plane>
+      <a-plane width="0.04" height="0.38" color="#00e5ff" opacity="0.7" position="-1.38 -0.36 0.007" side="double"></a-plane>
+      <a-text value="Carlos Fernandez  72a" color="#e0f0ff" width="3.2" position="-1.3 -0.30 0.01" anchor="left"></a-text>
+      <a-text value="EPOC estadio III" color="#ffab00" width="2.8" position="-1.3 -0.41 0.01" anchor="left"></a-text>
+      <a-text value="11:00  ESPERANDO" color="#00e5ff" width="2.5" position="0.5 -0.36 0.01" anchor="left"></a-text>
+
+      <a-plane width="2.8" height="0.38" color="#002535" opacity="0.7" position="0 -0.80 0.005" side="double"></a-plane>
+      <a-plane width="0.04" height="0.38" color="#00e5ff" opacity="0.7" position="-1.38 -0.80 0.007" side="double"></a-plane>
+      <a-text value="Ana Moreno Ruiz  34a" color="#e0f0ff" width="3.2" position="-1.3 -0.74 0.01" anchor="left"></a-text>
+      <a-text value="Anemia ferropenica" color="#ffab00" width="2.8" position="-1.3 -0.85 0.01" anchor="left"></a-text>
+      <a-text value="11:45  ESPERANDO" color="#00e5ff" width="2.5" position="0.5 -0.80 0.01" anchor="left"></a-text>
     </a-entity>
 
-    <!-- Panel 1: Patient History -->
-    <a-entity id="panel-1" position="0 0 0.1" rotation="0 0 0" visible="false">
-      <a-plane width="2.4" height="1.6" color="#001420" opacity="0.88" side="double"></a-plane>
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 0.8 0.002" side="double"></a-plane>
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 -0.8 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="-1.2 0 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="1.2 0 0.002" side="double"></a-plane>
-      <!-- Header -->
-      <a-text value="HISTORIAL CLINICO" color="#00e5ff" width="2" position="-1.05 0.65 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Juan Garcia Lopez · HC-2026-04821 · 68a" color="#90b0c0" width="1.8" position="-1.05 0.55 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Vitals row -->
-      <a-plane width="0.45" height="0.3" color="#003040" opacity="0.6" position="-0.82 0.32 0.005" side="double"></a-plane>
-      <a-text value="72" color="#76ff03" width="1.8" position="-0.82 0.36 0.01" font="monoid" align="center"></a-text>
-      <a-text value="FC bpm" color="#607080" width="1.2" position="-0.82 0.28 0.01" font="monoid" align="center"></a-text>
-      <a-plane width="0.55" height="0.3" color="#003040" opacity="0.6" position="-0.3 0.32 0.005" side="double"></a-plane>
-      <a-text value="136/82" color="#76ff03" width="1.8" position="-0.3 0.36 0.01" font="monoid" align="center"></a-text>
-      <a-text value="TA mmHg" color="#607080" width="1.2" position="-0.3 0.28 0.01" font="monoid" align="center"></a-text>
-      <a-plane width="0.45" height="0.3" color="#003040" opacity="0.6" position="0.22 0.32 0.005" side="double"></a-plane>
-      <a-text value="94%" color="#ffab00" width="1.8" position="0.22 0.36 0.01" font="monoid" align="center"></a-text>
-      <a-text value="SpO2" color="#607080" width="1.2" position="0.22 0.28 0.01" font="monoid" align="center"></a-text>
-      <a-plane width="0.45" height="0.3" color="#003040" opacity="0.6" position="0.72 0.32 0.005" side="double"></a-plane>
-      <a-text value="36.4" color="#76ff03" width="1.8" position="0.72 0.36 0.01" font="monoid" align="center"></a-text>
-      <a-text value="Temp C" color="#607080" width="1.2" position="0.72 0.28 0.01" font="monoid" align="center"></a-text>
-      <!-- History entries -->
-      <a-text value="--- HISTORIAL ---" color="#00e5ff" width="1.5" position="-1.05 0.1 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="12/03 Neumonia LID. Amoxi-Clav" color="#c0d8e8" width="1.8" position="-1.05 0.0 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="28/01 Urgencias. Disnea aguda" color="#c0d8e8" width="1.8" position="-1.05 -0.1 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="15/11 Espirometria normal" color="#c0d8e8" width="1.8" position="-1.05 -0.2 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Tests -->
-      <a-text value="--- PRUEBAS ---" color="#00e5ff" width="1.5" position="-1.05 -0.38 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Rx Torax PA      12/03/26" color="#c0d8e8" width="1.8" position="-1.05 -0.48 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Analitica        12/03/26" color="#c0d8e8" width="1.8" position="-1.05 -0.58 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Espirometria     15/11/25" color="#c0d8e8" width="1.8" position="-1.05 -0.68 0.01" font="monoid" anchor="left"></a-text>
+    <!-- PANEL 1: HISTORIAL -->
+    <a-entity id="panel-1" position="0 0.3 0" rotation="-90 0 0" scale="1.8 1.8 1.8" visible="false">
+      <a-plane width="3" height="2.2" color="#001825" opacity="0.95" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 1.1 0.003" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 -1.1 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="-1.5 0 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="1.5 0 0.003" side="double"></a-plane>
+
+      <a-text value="HISTORIAL CLINICO" color="#00e5ff" width="3.5" position="-1.35 0.9 0.01" anchor="left"></a-text>
+      <a-text value="Juan Garcia Lopez - HC-2026-04821" color="#80a0b0" width="3" position="-1.35 0.72 0.01" anchor="left"></a-text>
+
+      <a-plane width="0.6" height="0.45" color="#003545" opacity="0.8" position="-1.05 0.38 0.005" side="double"></a-plane>
+      <a-text value="72" color="#76ff03" width="3" position="-1.05 0.44 0.01" align="center"></a-text>
+      <a-text value="FC" color="#607080" width="2" position="-1.05 0.32 0.01" align="center"></a-text>
+
+      <a-plane width="0.7" height="0.45" color="#003545" opacity="0.8" position="-0.35 0.38 0.005" side="double"></a-plane>
+      <a-text value="136/82" color="#76ff03" width="3" position="-0.35 0.44 0.01" align="center"></a-text>
+      <a-text value="TA" color="#607080" width="2" position="-0.35 0.32 0.01" align="center"></a-text>
+
+      <a-plane width="0.6" height="0.45" color="#003545" opacity="0.8" position="0.35 0.38 0.005" side="double"></a-plane>
+      <a-text value="94%" color="#ffab00" width="3" position="0.35 0.44 0.01" align="center"></a-text>
+      <a-text value="SpO2" color="#607080" width="2" position="0.35 0.32 0.01" align="center"></a-text>
+
+      <a-plane width="0.6" height="0.45" color="#003545" opacity="0.8" position="1.05 0.38 0.005" side="double"></a-plane>
+      <a-text value="36.4" color="#76ff03" width="3" position="1.05 0.44 0.01" align="center"></a-text>
+      <a-text value="TEMP" color="#607080" width="2" position="1.05 0.32 0.01" align="center"></a-text>
+
+      <a-text value="HISTORIAL" color="#00e5ff" width="2.8" position="-1.35 0.05 0.01" anchor="left"></a-text>
+      <a-text value="12/03  Neumonia LID tratada" color="#d0e8f0" width="3" position="-1.35 -0.10 0.01" anchor="left"></a-text>
+      <a-text value="28/01  Urgencias disnea aguda" color="#d0e8f0" width="3" position="-1.35 -0.25 0.01" anchor="left"></a-text>
+      <a-text value="15/11  Espirometria normal" color="#d0e8f0" width="3" position="-1.35 -0.40 0.01" anchor="left"></a-text>
+
+      <a-text value="PRUEBAS" color="#00e5ff" width="2.8" position="-1.35 -0.60 0.01" anchor="left"></a-text>
+      <a-text value="Rx Torax PA        12/03/26" color="#d0e8f0" width="3" position="-1.35 -0.75 0.01" anchor="left"></a-text>
+      <a-text value="Analitica completa 12/03/26" color="#d0e8f0" width="3" position="-1.35 -0.90 0.01" anchor="left"></a-text>
     </a-entity>
 
-    <!-- Panel 2: Dictation -->
-    <a-entity id="panel-2" position="0 0 0.1" rotation="0 0 0" visible="false">
-      <a-plane width="2.4" height="1.6" color="#001420" opacity="0.88" side="double"></a-plane>
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 0.8 0.002" side="double"></a-plane>
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 -0.8 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="-1.2 0 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="1.2 0 0.002" side="double"></a-plane>
-      <!-- Header -->
-      <a-text value="DICTADO ASISTIDO IA" color="#00e5ff" width="2" position="-1.05 0.65 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Rec indicator -->
-      <a-circle radius="0.04" color="#ff1744" position="-1.0 0.5 0.01" side="double">
-        <a-animation attribute="material.opacity" from="1" to="0.2" dur="1000" direction="alternate" repeat="indefinite"></a-animation>
+    <!-- PANEL 2: DICTADO -->
+    <a-entity id="panel-2" position="0 0.3 0" rotation="-90 0 0" scale="1.8 1.8 1.8" visible="false">
+      <a-plane width="3" height="2.2" color="#001825" opacity="0.95" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 1.1 0.003" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 -1.1 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="-1.5 0 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="1.5 0 0.003" side="double"></a-plane>
+
+      <a-text value="DICTADO ASISTIDO IA" color="#00e5ff" width="3.5" position="-1.35 0.9 0.01" anchor="left"></a-text>
+
+      <a-circle radius="0.06" color="#ff1744" position="-1.25 0.68 0.01" side="double">
+        <a-animation attribute="material.opacity" from="1" to="0.2" dur="800" direction="alternate" repeat="indefinite"></a-animation>
       </a-circle>
-      <a-text value="REC - Whisper STT" color="#ff1744" width="1.5" position="-0.9 0.5 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="LLM: Llama-3 8B" color="#607080" width="1.2" position="0.5 0.5 0.01" font="monoid" anchor="left"></a-text>
-      <!-- Transcription -->
-      <a-plane width="2.2" height="0.5" color="#002030" opacity="0.6" position="0 0.2 0.005" side="double"></a-plane>
-      <a-text value="Paciente 68a. Mejoria clinica\ntras neumonia. Sin disnea ni\ntos. MVC bilateral. SpO2 94%." color="#e0f0ff" width="1.8" position="-1.0 0.3 0.01" font="monoid" anchor="left" wrap-count="36"></a-text>
-      <!-- SOAP -->
-      <a-text value="--- FORMATO SOAP ---" color="#00e5ff" width="1.5" position="-1.05 -0.12 0.01" font="monoid" anchor="left"></a-text>
-      <a-plane width="1.05" height="0.25" color="#002530" opacity="0.5" position="-0.55 -0.32 0.005" side="double"></a-plane>
-      <a-text value="S: Mejoria. Sin disnea\n   ni tos en 2 semanas" color="#76ff03" width="1.6" position="-1.0 -0.27 0.01" font="monoid" anchor="left"></a-text>
-      <a-plane width="1.05" height="0.25" color="#002530" opacity="0.5" position="0.55 -0.32 0.005" side="double"></a-plane>
-      <a-text value="O: MVC bilateral. FC 72\n   SpO2 94%. TA 136/82" color="#76ff03" width="1.6" position="0.1 -0.27 0.01" font="monoid" anchor="left"></a-text>
-      <a-plane width="1.05" height="0.25" color="#002530" opacity="0.5" position="-0.55 -0.62 0.005" side="double"></a-plane>
-      <a-text value="A: Procesando LLM..." color="#ffab00" width="1.6" position="-1.0 -0.6 0.01" font="monoid" anchor="left"></a-text>
-      <a-plane width="1.05" height="0.25" color="#002530" opacity="0.5" position="0.55 -0.62 0.005" side="double"></a-plane>
-      <a-text value="P: Pendiente dictado" color="#607080" width="1.6" position="0.1 -0.6 0.01" font="monoid" anchor="left"></a-text>
+      <a-text value="REC  Whisper STT" color="#ff1744" width="3" position="-1.1 0.68 0.01" anchor="left"></a-text>
+      <a-text value="LLM: Llama-3" color="#607080" width="2" position="0.6 0.68 0.01" anchor="left"></a-text>
+
+      <a-plane width="2.8" height="0.7" color="#002535" opacity="0.7" position="0 0.25 0.005" side="double"></a-plane>
+      <a-text value="Paciente 68a acude revision\ntras neumonia. Mejoria clinica.\nSin disnea ni tos. MVC bilateral.\nSpO2 94% basal." color="#ffffff" width="3" position="-1.3 0.42 0.01" anchor="left"></a-text>
+
+      <a-text value="FORMATO SOAP" color="#00e5ff" width="2.8" position="-1.35 -0.18 0.01" anchor="left"></a-text>
+
+      <a-plane width="1.35" height="0.35" color="#002a35" opacity="0.7" position="-0.7 -0.45 0.005" side="double"></a-plane>
+      <a-text value="S: Mejoria. Sin disnea" color="#76ff03" width="2.8" position="-1.3 -0.40 0.01" anchor="left"></a-text>
+      <a-text value="   ni tos 2 semanas" color="#76ff03" width="2.8" position="-1.3 -0.50 0.01" anchor="left"></a-text>
+
+      <a-plane width="1.35" height="0.35" color="#002a35" opacity="0.7" position="0.7 -0.45 0.005" side="double"></a-plane>
+      <a-text value="O: MVC bilateral FC 72" color="#76ff03" width="2.8" position="0.1 -0.40 0.01" anchor="left"></a-text>
+      <a-text value="   SpO2 94% TA 136/82" color="#76ff03" width="2.8" position="0.1 -0.50 0.01" anchor="left"></a-text>
+
+      <a-plane width="1.35" height="0.35" color="#002a35" opacity="0.7" position="-0.7 -0.85 0.005" side="double"></a-plane>
+      <a-text value="A: Procesando LLM..." color="#ffab00" width="2.8" position="-1.3 -0.82 0.01" anchor="left"></a-text>
+
+      <a-plane width="1.35" height="0.35" color="#002a35" opacity="0.7" position="0.7 -0.85 0.005" side="double"></a-plane>
+      <a-text value="P: Pendiente dictado" color="#607080" width="2.8" position="0.1 -0.82 0.01" anchor="left"></a-text>
     </a-entity>
 
-    <!-- Panel 3: Image Viewer -->
-    <a-entity id="panel-3" position="0 0 0.1" rotation="0 0 0" visible="false">
-      <a-plane width="2.4" height="1.6" color="#001420" opacity="0.88" side="double"></a-plane>
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 0.8 0.002" side="double"></a-plane>
-      <a-plane width="2.42" height="0.02" color="#00e5ff" opacity="0.4" position="0 -0.8 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="-1.2 0 0.002" side="double"></a-plane>
-      <a-plane width="0.02" height="1.6" color="#00e5ff" opacity="0.4" position="1.2 0 0.002" side="double"></a-plane>
-      <!-- Header -->
-      <a-text value="VISOR IMAGEN MEDICA" color="#00e5ff" width="2" position="-1.05 0.65 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="Rx Torax PA - 12/03/2026" color="#607080" width="1.5" position="-1.05 0.55 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="ZOOM: 100%" color="#00e5ff" width="1.2" position="0.6 0.65 0.01" font="monoid" anchor="left"></a-text>
-      <!-- X-ray placeholder -->
-      <a-plane width="1.4" height="1.0" color="#002535" opacity="0.7" position="-0.35 -0.05 0.005" side="double"></a-plane>
-      <a-text value="[  Rx Torax PA  ]\n\n  Pinza: zoom\n  Muneca: rotar" color="#406070" width="1.5" position="-0.35 -0.05 0.01" font="monoid" align="center"></a-text>
-      <!-- Findings -->
-      <a-plane width="0.7" height="1.0" color="#002030" opacity="0.5" position="0.8 -0.05 0.005" side="double"></a-plane>
-      <a-text value="HALLAZGOS" color="#00e5ff" width="1.2" position="0.5 0.35 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="! Opacidad\n  residual LID" color="#ffab00" width="1.0" position="0.5 0.2 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="OK Silueta\n   cardiaca normal" color="#76ff03" width="1.0" position="0.5 0.02 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="OK Senos CF\n   libres" color="#76ff03" width="1.0" position="0.5 -0.15 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="--- ACCIONES ---" color="#00e5ff" width="1.0" position="0.5 -0.35 0.01" font="monoid" anchor="left"></a-text>
-      <a-text value="> Adjuntar informe\n> Dictar hallazgo" color="#c0d8e8" width="1.0" position="0.5 -0.48 0.01" font="monoid" anchor="left"></a-text>
+    <!-- PANEL 3: IMAGEN -->
+    <a-entity id="panel-3" position="0 0.3 0" rotation="-90 0 0" scale="1.8 1.8 1.8" visible="false">
+      <a-plane width="3" height="2.2" color="#001825" opacity="0.95" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 1.1 0.003" side="double"></a-plane>
+      <a-plane width="3.02" height="0.04" color="#00e5ff" opacity="0.8" position="0 -1.1 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="-1.5 0 0.003" side="double"></a-plane>
+      <a-plane width="0.04" height="2.2" color="#00e5ff" opacity="0.8" position="1.5 0 0.003" side="double"></a-plane>
+
+      <a-text value="VISOR IMAGEN MEDICA" color="#00e5ff" width="3.5" position="-1.35 0.9 0.01" anchor="left"></a-text>
+      <a-text value="Rx Torax PA  12/03/2026" color="#80a0b0" width="2.8" position="-1.35 0.72 0.01" anchor="left"></a-text>
+      <a-text value="ZOOM: 100%" color="#00e5ff" width="2" position="0.7 0.9 0.01" anchor="left"></a-text>
+
+      <a-plane width="1.8" height="1.4" color="#002a3a" opacity="0.8" position="-0.4 -0.15 0.005" side="double"></a-plane>
+      <a-text value="[ Rx Torax PA ]" color="#406878" width="3" position="-0.4 0.1 0.01" align="center"></a-text>
+      <a-text value="Pinza: zoom" color="#00e5ff" width="2" position="-0.4 -0.15 0.01" align="center"></a-text>
+      <a-text value="Muneca: rotar" color="#00e5ff" width="2" position="-0.4 -0.35 0.01" align="center"></a-text>
+
+      <a-plane width="0.9" height="1.4" color="#002030" opacity="0.7" position="1.0 -0.15 0.005" side="double"></a-plane>
+      <a-text value="HALLAZGOS" color="#00e5ff" width="2.5" position="0.62 0.4 0.01" anchor="left"></a-text>
+
+      <a-text value="! Opacidad" color="#ffab00" width="2" position="0.62 0.2 0.01" anchor="left"></a-text>
+      <a-text value="  residual LID" color="#ffab00" width="2" position="0.62 0.08 0.01" anchor="left"></a-text>
+
+      <a-text value="OK Silueta" color="#76ff03" width="2" position="0.62 -0.1 0.01" anchor="left"></a-text>
+      <a-text value="   cardiaca OK" color="#76ff03" width="2" position="0.62 -0.22 0.01" anchor="left"></a-text>
+
+      <a-text value="OK Senos CF" color="#76ff03" width="2" position="0.62 -0.4 0.01" anchor="left"></a-text>
+      <a-text value="   libres" color="#76ff03" width="2" position="0.62 -0.52 0.01" anchor="left"></a-text>
+
+      <a-text value="ACCIONES" color="#00e5ff" width="2" position="0.62 -0.72 0.01" anchor="left"></a-text>
+      <a-text value="> Adjuntar" color="#d0e8f0" width="1.8" position="0.62 -0.85 0.01" anchor="left"></a-text>
     </a-entity>
 
   </a-marker>
-
   <a-entity camera></a-entity>
 </a-scene>
 
 <script>
 function startAR() {
   document.getElementById('intro').classList.add('hidden');
-
-  // En lugar de display, cambiamos la opacidad y forzamos el redimensionado
-  const scene = document.getElementById('arscene');
-  scene.style.opacity = "1";
- 
-  // document.getElementById('arscene').style.display = '';
+  document.getElementById('arscene').style.display = '';
   document.getElementById('topbar').style.display = '';
   document.getElementById('nav').style.display = '';
   document.getElementById('ghint').style.display = '';
-
-  // Truco para móviles: avisar al navegador que el tamaño ha cambiado
-  window.dispatchEvent(new Event('resize'));
 }
 
-let currentPanel = 0;
 function showPanel(index, btn) {
   for (let i = 0; i < 4; i++) {
-    const panel = document.getElementById('panel-' + i);
-    if (panel) panel.setAttribute('visible', i === index);
+    const p = document.getElementById('panel-' + i);
+    if (p) p.setAttribute('visible', i === index);
   }
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
-  currentPanel = index;
 }
 </script>
-
 </body>
 </html>
