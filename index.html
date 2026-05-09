@@ -229,44 +229,8 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
   font-family:'Share Tech Mono',monospace;
 }
 .proj-body {
-  position:absolute;
-
-  top:45px;
-  left:0;
-  right:0;
-  bottom:0;
-
-  display:flex;
-  align-items:center;
-  justify-content:center;
-
-  padding:12px;
-
-  overflow:hidden;
-
-  z-index:1;
-}
-
-  .proj-image {
-
-  width:auto;
-  height:auto;
-
-  max-width:100%;
-  max-height:100%;
-
-  object-fit:contain;
-
-  border-radius:10px;
-
-  border:1px solid rgba(0,229,255,0.25);
-
-  box-shadow:
-    0 0 25px rgba(0,229,255,0.15);
-
-  filter:
-    brightness(1.05)
-    contrast(1.1);
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; z-index:1;
 }
 .proj-lung {
   font-size:80px; opacity:0.3; line-height:1;
@@ -350,36 +314,9 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 .marker-status.searching { color:var(--amber); background:rgba(255,171,0,0.1); border:1px solid rgba(255,171,0,0.3); }
 .marker-status.found { color:var(--green); background:rgba(118,255,3,0.1); border:1px solid rgba(118,255,3,0.3); }
 
-@media (orientation: landscape) {
-
-  .image-projection {
-    top:40px;
-    bottom:4px;
-    right:4px;
-  }
-
+@media (orientation: portrait) {
+  .intro-box p::after { content: '\A\A\1F4F1 Gira el movil en horizontal.'; white-space: pre-wrap; color: var(--amber); }
 }
-
-  /* ===== IMAGE PROJECTION (right side) ===== */
-.image-projection {
-  position:fixed;
-  top:50px;
-  left:40%;
-  right:10px;
-  bottom:10px;
-  z-index:60;
-  display:none;
-  align-items:center;
-  justify-content:center;
-  pointer-events:none;
-}
-
-.image-projection.visible {
-  display:flex;
-  pointer-events:auto;
-}
-
-
 </style>
 </head>
 <body>
@@ -387,8 +324,6 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 <video id="camera" autoplay playsinline muted></video>
 <canvas id="detect-canvas"></canvas>
 <div class="scanline"></div>
-
- 
 
 <!-- Image projection (right side) -->
 <div class="image-projection" id="img-proj">
@@ -398,36 +333,18 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
       <button class="proj-close" onclick="closeProjection()">✕ CERRAR</button>
     </div>
     <div class="proj-body">
-
-  <img
-    src="img/rx-torax.jpg"
-    class="proj-image"
-    id="rx-image"
-  >
-
-  <div class="proj-zoom">
-
-    <button
-      class="proj-zoom-btn"
-      onclick="projZoom(-10)">
-      −
-    </button>
-
-    <div
-      class="proj-zoom-level"
-      id="proj-zoom-val">
-      100%
-    </div>
-
-    <button
-      class="proj-zoom-btn"
-      onclick="projZoom(10)">
-      +
-    </button>
-
-  </div>
-
-</div>
+      <div class="proj-lung">🫁</div>
+      <div class="proj-grid">
+        <div class="proj-quadrant">LSD</div>
+        <div class="proj-quadrant">LSI</div>
+        <div class="proj-quadrant highlight">LID</div>
+        <div class="proj-quadrant">LII</div>
+      </div>
+      <div class="proj-info">
+        ⚠ Opacidad residual en LID señalizada<br>
+        Pinza para zoom · Muñeca para rotar
+      </div>
+      <div class="proj-zoom">
         <button class="proj-zoom-btn" onclick="projZoom(-10)">−</button>
         <div class="proj-zoom-level" id="proj-zoom-val">100%</div>
         <button class="proj-zoom-btn" onclick="projZoom(10)">+</button>
@@ -601,8 +518,7 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
       <div class="panel-title" style="margin:0;">🫁 Rx Tórax PA</div>
       <div style="font-family:'Share Tech Mono';font-size:10px;color:var(--cyan);">100%</div>
     </div>
-    <div class="xray-box" onclick="openProjection()"
-     style="cursor:pointer;">
+    <div class="xray-box">
       <div class="xray-label">
         <span>🫁</span>
         Rx Tórax PA<br>
@@ -626,132 +542,52 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 </div>
 
 <script>
-
-let projZoomLevel = 100;
-
 async function startAR() {
-
-  document.getElementById('intro')
-    .classList.add('hidden');
-
-  document.getElementById('topbar')
-    .style.display = '';
-
-  document.getElementById('marker-status')
-    .style.display = '';
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('topbar').style.display = '';
+  document.getElementById('marker-status').style.display = '';
 
   try {
-
-    const stream =
-      await navigator.mediaDevices.getUserMedia({
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        }
-      });
-
-    const video =
-      document.getElementById('camera');
-
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    const video = document.getElementById('camera');
     video.srcObject = stream;
-
     video.play();
 
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen();
+    } else if (document.documentElement.webkitRequestFullscreen) {
+      document.documentElement.webkitRequestFullscreen();
     }
 
     setTimeout(() => {
-
-      document.getElementById('hud')
-        .classList.add('visible');
-
-      document.getElementById('vitals-hud')
-        .classList.add('visible');
-
-      document.getElementById('crosshair')
-        .classList.add('visible');
-
-      const ms =
-        document.getElementById('marker-status');
-
+      document.getElementById('hud').classList.add('visible');
+      document.getElementById('vitals-hud').classList.add('visible');
+      document.getElementById('crosshair').classList.add('visible');
+      const ms = document.getElementById('marker-status');
       ms.textContent = '● AR activo';
-
       ms.className = 'marker-status found';
-
     }, 1200);
 
   } catch (err) {
-
-    document.getElementById('hud')
-      .classList.add('visible');
-
-    document.getElementById('vitals-hud')
-      .classList.add('visible');
-
-    document.getElementById('crosshair')
-      .classList.add('visible');
-
-    const ms =
-      document.getElementById('marker-status');
-
+    document.getElementById('hud').classList.add('visible');
+    document.getElementById('vitals-hud').classList.add('visible');
+    document.getElementById('crosshair').classList.add('visible');
+    const ms = document.getElementById('marker-status');
     ms.textContent = '⚠ Modo demo';
-
     ms.className = 'marker-status searching';
   }
 }
 
 function goTo(index) {
-
   for (let i = 0; i < 4; i++) {
-
-    document.getElementById('s' + i)
-      .classList.remove('active');
-
-    document.getElementById('nb' + i)
-      .classList.remove('active');
+    document.getElementById('s' + i).classList.remove('active');
+    document.getElementById('nb' + i).classList.remove('active');
   }
-
-  document.getElementById('s' + index)
-    .classList.add('active');
-
-  document.getElementById('nb' + index)
-    .classList.add('active');
+  document.getElementById('s' + index).classList.add('active');
+  document.getElementById('nb' + index).classList.add('active');
 }
-
-function openProjection() {
-
-  document.getElementById('img-proj')
-    .classList.add('visible');
-}
-
-function closeProjection() {
-
-  document.getElementById('img-proj')
-    .classList.remove('visible');
-}
-
-function projZoom(delta) {
-
-  projZoomLevel += delta;
-
-  if (projZoomLevel < 50)
-    projZoomLevel = 50;
-
-  if (projZoomLevel > 200)
-    projZoomLevel = 200;
-
-  document.getElementById('proj-zoom-val')
-    .textContent = projZoomLevel + '%';
-
-  const img =
-  document.getElementById('rx-image');
-
-img.style.transform =
-  `scale(${projZoomLevel / 100})`;
-}
-
 </script>
 </body>
 </html>
