@@ -193,6 +193,84 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 .finding.ok { color:var(--green); }
 .finding-detail { font-size:9px; color:var(--text-dim); margin-top:1px; }
 
+/* ===== IMAGE PROJECTION (right side) ===== */
+.image-projection {
+  position:fixed; top:50px; left:40%; right:10px; bottom:10px; z-index:60;
+  display:none; align-items:center; justify-content:center;
+  pointer-events:none;
+}
+.image-projection.visible { display:flex; pointer-events:auto; }
+.image-proj-inner {
+  width:100%; height:100%;
+  background:linear-gradient(145deg, rgba(0,25,45,0.88), rgba(0,50,70,0.65));
+  border:1px solid var(--cyan); border-radius:12px;
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:relative; overflow:hidden;
+  backdrop-filter:blur(4px);
+  animation:proj-in 0.4s ease forwards;
+}
+@keyframes proj-in { from{opacity:0;transform:scale(0.9)} to{opacity:1;transform:scale(1)} }
+.image-proj-inner::before {
+  content:''; position:absolute; top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 3px,rgba(0,229,255,0.015) 3px,rgba(0,229,255,0.015) 6px);
+  pointer-events:none;
+}
+.proj-header {
+  position:absolute; top:0;left:0;right:0;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:8px 12px;
+  background:rgba(0,15,25,0.7);
+  border-bottom:1px solid var(--border);
+  font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--cyan);
+}
+.proj-close {
+  background:rgba(255,23,68,0.15); border:1px solid rgba(255,23,68,0.4); color:var(--red);
+  font-size:11px; padding:3px 10px; border-radius:8px; cursor:pointer;
+  font-family:'Share Tech Mono',monospace;
+}
+.proj-body {
+  display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:8px; z-index:1;
+}
+.proj-lung {
+  font-size:80px; opacity:0.3; line-height:1;
+}
+.proj-grid {
+  display:grid; grid-template-columns:1fr 1fr; gap:1px;
+  width:80%; max-width:300px;
+}
+.proj-quadrant {
+  height:60px;
+  border:1px solid rgba(0,229,255,0.15);
+  display:flex; align-items:center; justify-content:center;
+  font-family:'Share Tech Mono',monospace; font-size:9px; color:var(--text-dim);
+  position:relative;
+}
+.proj-quadrant.highlight {
+  background:rgba(255,171,0,0.08);
+  border-color:rgba(255,171,0,0.4);
+}
+.proj-quadrant.highlight::after {
+  content:'⚠'; position:absolute; top:3px; right:5px; font-size:12px; color:var(--amber);
+}
+.proj-info {
+  font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim);
+  text-align:center;
+}
+.proj-zoom {
+  display:flex; gap:8px; margin-top:4px;
+}
+.proj-zoom-btn {
+  background:rgba(0,229,255,0.08); border:1px solid var(--border); color:var(--cyan);
+  font-family:'Share Tech Mono',monospace; font-size:14px;
+  width:30px; height:30px; border-radius:50%; cursor:pointer;
+  display:flex; align-items:center; justify-content:center;
+}
+.proj-zoom-level {
+  font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--cyan);
+  display:flex; align-items:center;
+}
+
 /* ===== CROSSHAIR (center of camera view) ===== */
 .crosshair {
   position:fixed; top:50%; left:69%; transform:translate(-50%,-50%); z-index:10;
@@ -246,6 +324,35 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 <video id="camera" autoplay playsinline muted></video>
 <canvas id="detect-canvas"></canvas>
 <div class="scanline"></div>
+
+<!-- Image projection (right side) -->
+<div class="image-projection" id="img-proj">
+  <div class="image-proj-inner">
+    <div class="proj-header">
+      <span>🫁 Rx Tórax PA · 12/03/2026</span>
+      <button class="proj-close" onclick="closeProjection()">✕ CERRAR</button>
+    </div>
+    <div class="proj-body">
+      <div class="proj-lung">🫁</div>
+      <div class="proj-grid">
+        <div class="proj-quadrant">LSD</div>
+        <div class="proj-quadrant">LSI</div>
+        <div class="proj-quadrant highlight">LID</div>
+        <div class="proj-quadrant">LII</div>
+      </div>
+      <div class="proj-info">
+        ⚠ Opacidad residual en LID señalizada<br>
+        Pinza para zoom · Muñeca para rotar
+      </div>
+      <div class="proj-zoom">
+        <button class="proj-zoom-btn" onclick="projZoom(-10)">−</button>
+        <div class="proj-zoom-level" id="proj-zoom-val">100%</div>
+        <button class="proj-zoom-btn" onclick="projZoom(10)">+</button>
+        <button class="proj-zoom-btn">↻</button>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- Crosshair -->
 <div class="crosshair" id="crosshair"><div class="crosshair-circle"></div></div>
