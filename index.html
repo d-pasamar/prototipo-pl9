@@ -1,66 +1,417 @@
 <!DOCTYPE html>
-<html>
+<html lang="es">
 <head>
-    <meta charset="UTF-8">
-    <title>BHF-XR · Prototipo Final</title>
-    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
-    <script src="https://raw.githack.com/AR-js-org/AR.js/master/aframe/build/aframe-ar.js"></script>
-    <style>
-        body { margin: 0; overflow: hidden; font-family: sans-serif; }
-        .nav {
-            position: fixed; bottom: 20px; left: 0; right: 0;
-            display: flex; justify-content: center; gap: 10px; z-index: 1000;
-        }
-        button {
-            padding: 12px; background: #00e5ff; border: none; color: #000;
-            font-weight: bold; border-radius: 5px; cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>BHF-XR · AR Médica</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Rajdhani:wght@400;500;600;700&family=Share+Tech+Mono&display=swap');
+
+:root {
+  --cyan: #00e5ff;
+  --cyan-dim: rgba(0,229,255,0.25);
+  --cyan-glow: rgba(0,229,255,0.12);
+  --green: #76ff03;
+  --green-dim: rgba(118,255,3,0.25);
+  --amber: #ffab00;
+  --red: #ff1744;
+  --bg: rgba(0,12,22,0.88);
+  --panel: rgba(0,25,40,0.85);
+  --border: rgba(0,229,255,0.3);
+  --text: rgba(225,240,255,0.95);
+  --text-dim: rgba(170,200,220,0.6);
+}
+
+* { margin:0; padding:0; box-sizing:border-box; }
+body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; color:var(--text); }
+
+/* Camera feed */
+#camera { position:fixed; top:0;left:0;width:100%;height:100%; object-fit:cover; z-index:1; }
+
+/* Hidden canvas for marker detection */
+#detect-canvas { display:none; }
+
+/* Scanline overlay */
+.scanline {
+  position:fixed; top:0;left:0;right:0;bottom:0; z-index:2; pointer-events:none;
+  background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(0,229,255,0.015) 3px, rgba(0,229,255,0.015) 6px);
+}
+
+/* Top bar */
+.top-bar {
+  position:fixed; top:0;left:0;right:0; z-index:100;
+  display:flex; justify-content:space-between; align-items:center;
+  padding:10px 16px;
+  background:rgba(0,10,20,0.8);
+  backdrop-filter:blur(10px);
+  border-bottom:1px solid var(--border);
+}
+.top-bar .logo { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--cyan); letter-spacing:2px; }
+.top-bar .status { font-size:11px; color:var(--text-dim); font-family:'Share Tech Mono',monospace; }
+.dot { display:inline-block;width:7px;height:7px;background:var(--green);border-radius:50%;margin-right:5px; animation:pulse 2s infinite; }
+@keyframes pulse { 0%,100%{opacity:1}50%{opacity:0.3} }
+
+/* Bottom nav */
+.bottom-nav {
+  position:fixed; bottom:0;left:0;right:0; z-index:100;
+  display:flex; justify-content:center; gap:5px; padding:10px;
+  background:rgba(0,10,20,0.85);
+  backdrop-filter:blur(10px);
+  border-top:1px solid var(--border);
+}
+.nav-btn {
+  background:transparent; border:1px solid var(--border); color:var(--text-dim);
+  font-family:'Rajdhani',sans-serif; font-size:12px; font-weight:600;
+  padding:7px 14px; border-radius:18px; cursor:pointer; transition:all 0.3s;
+  text-transform:uppercase; letter-spacing:1px;
+}
+.nav-btn.active { background:var(--cyan-glow); border-color:var(--cyan); color:var(--cyan); box-shadow:0 0 12px var(--cyan-glow); }
+
+/* Marker status */
+.marker-status {
+  position:fixed; top:52px; left:50%; transform:translateX(-50%); z-index:100;
+  font-family:'Share Tech Mono',monospace; font-size:11px;
+  padding:4px 14px; border-radius:12px;
+  transition:all 0.3s;
+}
+.marker-status.searching { color:var(--amber); background:rgba(255,171,0,0.1); border:1px solid rgba(255,171,0,0.3); }
+.marker-status.found { color:var(--green); background:rgba(118,255,3,0.1); border:1px solid rgba(118,255,3,0.3); }
+
+/* HUD container */
+.hud {
+  position:fixed; top:80px; left:12px; right:12px; bottom:55px; z-index:50;
+  opacity:0; transform:scale(0.95);
+  transition:opacity 0.4s, transform 0.4s;
+  pointer-events:none;
+}
+.hud.visible { opacity:1; transform:scale(1); }
+
+/* Corner marks */
+.hud::before, .hud::after { content:''; position:absolute; width:20px; height:20px; border-color:var(--cyan); border-style:solid; }
+.hud::before { top:0;left:0; border-width:2px 0 0 2px; border-radius:6px 0 0 0; }
+.hud::after { top:0;right:0; border-width:2px 2px 0 0; border-radius:0 6px 0 0; }
+.corner-bl, .corner-br { position:absolute; width:20px; height:20px; border-color:var(--cyan); border-style:solid; }
+.corner-bl { bottom:0;left:0; border-width:0 0 2px 2px; border-radius:0 0 0 6px; }
+.corner-br { bottom:0;right:0; border-width:0 2px 2px 0; border-radius:0 0 6px 0; }
+
+/* Screen panels */
+.screen { display:none; height:100%; overflow-y:auto; padding:8px; }
+.screen.active { display:flex; flex-direction:column; gap:8px; }
+
+/* Shared panel style */
+.panel {
+  background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:12px;
+  backdrop-filter:blur(6px);
+}
+.panel-title {
+  font-size:11px; text-transform:uppercase; letter-spacing:2px; color:var(--cyan);
+  margin-bottom:8px; font-weight:600;
+}
+
+/* Patient card */
+.p-card {
+  background:rgba(0,35,55,0.7); border:1px solid var(--border); border-radius:8px;
+  padding:10px 12px; display:flex; justify-content:space-between; align-items:center;
+  border-left:3px solid var(--cyan);
+}
+.p-card.active-patient { border-left-color:var(--green); }
+.p-name { font-size:15px; font-weight:600; }
+.p-info { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim); margin-top:1px; }
+.p-reason { font-size:12px; color:var(--amber); margin-top:2px; }
+.p-time { font-family:'Share Tech Mono',monospace; font-size:12px; color:var(--text-dim); }
+.badge {
+  font-size:9px; padding:2px 8px; border-radius:8px; text-transform:uppercase;
+  letter-spacing:1px; font-weight:700; margin-top:4px; display:inline-block;
+}
+.badge.go { background:rgba(118,255,3,0.12); color:var(--green); border:1px solid var(--green-dim); }
+.badge.wait { background:var(--cyan-glow); color:var(--cyan); border:1px solid var(--cyan-dim); }
+
+/* Vitals */
+.vitals-row { display:flex; gap:6px; }
+.vital {
+  flex:1; text-align:center; padding:8px 4px;
+  background:rgba(0,35,55,0.7); border:1px solid var(--border); border-radius:8px;
+}
+.vital .v-val { font-family:'Share Tech Mono',monospace; font-size:20px; font-weight:700; color:var(--green); }
+.vital .v-label { font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+.vital.warn .v-val { color:var(--amber); }
+
+/* History entry */
+.h-entry { padding:6px 0; border-bottom:1px solid rgba(0,229,255,0.08); font-size:13px; }
+.h-entry:last-child { border:none; }
+.h-date { font-family:'Share Tech Mono',monospace; font-size:10px; color:var(--text-dim); }
+
+/* Dictation */
+.mic-bar { display:flex; align-items:center; gap:8px; margin-bottom:10px; }
+.mic-dot { width:10px;height:10px;border-radius:50%;background:var(--red); animation:mic-p 1s infinite; }
+@keyframes mic-p { 0%,100%{box-shadow:0 0 0 0 rgba(255,23,68,0.3)} 50%{box-shadow:0 0 0 6px transparent} }
+.mic-label { font-family:'Share Tech Mono',monospace; font-size:11px; color:var(--red); text-transform:uppercase; letter-spacing:2px; }
+.transcript { font-size:14px; line-height:1.6; padding:10px; background:rgba(0,30,45,0.6); border-radius:8px; border:1px solid var(--border); }
+.cursor-blink { display:inline-block;width:2px;height:15px;background:var(--cyan);vertical-align:text-bottom;animation:blink 1s step-end infinite; }
+@keyframes blink { 0%,100%{opacity:1}50%{opacity:0} }
+
+.soap-grid { display:grid; grid-template-columns:1fr 1fr; gap:6px; margin-top:8px; }
+.soap-box { background:rgba(0,35,50,0.6); border:1px solid var(--border); border-radius:8px; padding:8px; }
+.soap-letter { font-family:'Share Tech Mono',monospace; font-size:18px; font-weight:700; color:var(--cyan); }
+.soap-label { font-size:9px; color:var(--text-dim); text-transform:uppercase; letter-spacing:1px; }
+.soap-text { font-size:12px; margin-top:4px; line-height:1.4; }
+.soap-text.pending { color:var(--text-dim); font-style:italic; }
+
+/* Image viewer */
+.xray-box {
+  width:100%; height:180px; background:linear-gradient(135deg, rgba(0,30,50,0.9), rgba(0,50,70,0.5));
+  border-radius:8px; display:flex; align-items:center; justify-content:center;
+  border:1px solid var(--border); position:relative; overflow:hidden;
+}
+.xray-box::before {
+  content:''; position:absolute; top:0;left:0;right:0;bottom:0;
+  background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,229,255,0.02) 2px,rgba(0,229,255,0.02) 4px);
+}
+.xray-label { font-family:'Share Tech Mono',monospace; font-size:13px; color:var(--text-dim); text-align:center; z-index:1; }
+.xray-label span { display:block; font-size:40px; opacity:0.25; margin-bottom:6px; }
+.finding { padding:6px 0; border-bottom:1px solid rgba(0,229,255,0.08); font-size:12px; }
+.finding:last-child { border:none; }
+.finding.warn { color:var(--amber); }
+.finding.ok { color:var(--green); }
+.finding-detail { font-size:10px; color:var(--text-dim); margin-top:2px; }
+
+/* Intro */
+.intro-overlay {
+  position:fixed; top:0;left:0;right:0;bottom:0; z-index:200;
+  background:rgba(0,8,16,0.95); display:flex; align-items:center; justify-content:center;
+}
+.intro-box {
+  text-align:center; padding:30px; max-width:300px;
+  border:1px solid var(--border); border-radius:16px; background:var(--panel);
+}
+.intro-box h2 { font-size:22px; color:var(--cyan); letter-spacing:3px; margin-bottom:10px; }
+.intro-box p { font-size:13px; color:var(--text-dim); line-height:1.6; margin-bottom:16px; }
+.start-btn {
+  background:var(--cyan-glow); border:1px solid var(--cyan); color:var(--cyan);
+  padding:10px 30px; border-radius:25px; font-size:14px; font-family:'Share Tech Mono',monospace;
+  cursor:pointer; letter-spacing:1px;
+}
+.hidden { display:none !important; }
+</style>
 </head>
 <body>
 
-    <div class="nav">
-        <button onclick="cambiar(0)">PACIENTES</button>
-        <button onclick="cambiar(1)">HISTORIAL</button>
-        <button onclick="cambiar(2)">IMAGEN</button>
+<video id="camera" autoplay playsinline muted></video>
+<canvas id="detect-canvas"></canvas>
+<div class="scanline"></div>
+
+<div class="intro-overlay" id="intro">
+  <div class="intro-box">
+    <h2>BHF-XR</h2>
+    <p>Prototipo AR — Interfaz Médica<br><br>
+    Apunta la cámara al marcador <b>HIRO</b>.<br>
+    La interfaz HUD aparecerá sobre la imagen de la cámara.<br><br>
+    Funciona sin marcador también: pulsa INICIAR y navega.</p>
+    <button class="start-btn" onclick="startAR()">INICIAR AR</button>
+  </div>
+</div>
+
+<div class="top-bar" id="topbar" style="display:none;">
+  <div class="logo">⬡ BHF-XR</div>
+  <div class="status"><span class="dot"></span>Dra. Martín · Consulta 4B</div>
+</div>
+
+<div class="marker-status searching" id="marker-status" style="display:none;">⟳ Buscando marcador...</div>
+
+<div class="hud" id="hud">
+  <div class="corner-bl"></div>
+  <div class="corner-br"></div>
+
+  <!-- SCREEN 0: Pacientes -->
+  <div class="screen active" id="s0">
+    <div class="panel">
+      <div class="panel-title">📋 Pacientes del día</div>
     </div>
+    <div class="p-card active-patient" onclick="goTo(1)">
+      <div>
+        <div class="p-name">Juan García López</div>
+        <div class="p-info">HC-2026-04821 · 68 años · M</div>
+        <div class="p-reason">Revisión neumología</div>
+      </div>
+      <div style="text-align:right">
+        <div class="p-time">09:30</div>
+        <div class="badge go">En curso</div>
+      </div>
+    </div>
+    <div class="p-card">
+      <div>
+        <div class="p-name">María Rodríguez Sánchez</div>
+        <div class="p-info">HC-2026-05134 · 45 años · F</div>
+        <div class="p-reason">Dolor torácico recurrente</div>
+      </div>
+      <div style="text-align:right">
+        <div class="p-time">10:15</div>
+        <div class="badge wait">Esperando</div>
+      </div>
+    </div>
+    <div class="p-card">
+      <div>
+        <div class="p-name">Carlos Fernández Díaz</div>
+        <div class="p-info">HC-2026-03967 · 72 años · M</div>
+        <div class="p-reason">EPOC estadio III</div>
+      </div>
+      <div style="text-align:right">
+        <div class="p-time">11:00</div>
+        <div class="badge wait">Esperando</div>
+      </div>
+    </div>
+    <div class="p-card">
+      <div>
+        <div class="p-name">Ana Moreno Ruiz</div>
+        <div class="p-info">HC-2026-06201 · 34 años · F</div>
+        <div class="p-reason">Anemia ferropénica</div>
+      </div>
+      <div style="text-align:right">
+        <div class="p-time">11:45</div>
+        <div class="badge wait">Esperando</div>
+      </div>
+    </div>
+  </div>
 
-    <a-scene embedded arjs="sourceType: webcam; debugUIEnabled: false;" vr-mode-ui="enabled: false">
-        
-        <a-marker preset="hiro">
-            <a-entity id="interfaz" rotation="-90 0 0" position="0 0 0">
-                
-                <a-box width="2" height="1.2" depth="0.1" color="#001522" opacity="0.9" position="0 0 -0.05"></a-box>
+  <!-- SCREEN 1: Historial -->
+  <div class="screen" id="s1">
+    <div class="panel" style="display:flex;justify-content:space-between;align-items:center;">
+      <div>
+        <div style="font-size:16px;font-weight:600;">Juan García López</div>
+        <div style="font-family:'Share Tech Mono';font-size:10px;color:var(--text-dim);">HC-2026-04821 · 68a · A+ · Alergia: Penicilina</div>
+      </div>
+    </div>
+    <div class="vitals-row">
+      <div class="vital"><div class="v-val">72</div><div class="v-label">FC bpm</div></div>
+      <div class="vital"><div class="v-val">136/82</div><div class="v-label">TA mmHg</div></div>
+      <div class="vital warn"><div class="v-val">94%</div><div class="v-label">SpO₂</div></div>
+      <div class="vital"><div class="v-val">36.4°</div><div class="v-label">Temp</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Historial reciente</div>
+      <div class="h-entry"><div class="h-date">12/03/2026</div><div>Neumonía LID. Amoxicilina-Clavulánico 875mg/8h x 10d.</div></div>
+      <div class="h-entry"><div class="h-date">28/01/2026</div><div>Urgencias — Disnea aguda. Rx: infiltrado LID. Ingreso 48h.</div></div>
+      <div class="h-entry"><div class="h-date">15/11/2025</div><div>Revisión anual — Espirometría normal.</div></div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Pruebas diagnósticas</div>
+      <div class="h-entry" onclick="goTo(3)" style="cursor:pointer;color:var(--cyan);">🫁 Rx Tórax PA — 12/03/2026 →</div>
+      <div class="h-entry">🔬 Analítica completa — 12/03/2026</div>
+      <div class="h-entry">🫁 Espirometría — 15/11/2025</div>
+    </div>
+  </div>
 
-                <a-entity id="sec0" visible="true">
-                    <a-text value="LISTADO DE PACIENTES" color="#00e5ff" position="-0.9 0.4 0.06" width="3"></a-text>
-                    <a-text value="> Garcia Lopez, J. (BOX 1)\n> Rodriguez, M. (ESPERA)" position="-0.9 0 0.06" width="2.5"></a-text>
-                </a-entity>
+  <!-- SCREEN 2: Dictado -->
+  <div class="screen" id="s2">
+    <div class="panel">
+      <div class="panel-title">🎤 Dictado asistido por IA</div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px;">
+        <div class="mic-bar"><div class="mic-dot"></div><div class="mic-label">Rec · Whisper</div></div>
+        <div style="font-family:'Share Tech Mono';font-size:10px;color:var(--text-dim);">LLM: Llama-3 8B</div>
+      </div>
+      <div class="transcript">
+        Paciente de 68 años que acude a revisión tras neumonía tratada con amoxicilina-clavulánico. Refiere mejoría clínica significativa, sin disnea de esfuerzo ni tos productiva en las últimas dos semanas. Auscultación pulmonar con murmullo vesicular conservado. SpO₂ 94% basal.<span class="cursor-blink"></span>
+      </div>
+    </div>
+    <div class="soap-grid">
+      <div class="soap-box">
+        <div class="soap-letter">S</div>
+        <div class="soap-label">Subjetivo</div>
+        <div class="soap-text">Mejoría clínica. Sin disnea ni tos en 2 semanas.</div>
+      </div>
+      <div class="soap-box">
+        <div class="soap-letter">O</div>
+        <div class="soap-label">Objetivo</div>
+        <div class="soap-text">MVC bilateral. FC 72. SpO₂ 94%. TA 136/82.</div>
+      </div>
+      <div class="soap-box">
+        <div class="soap-letter">A</div>
+        <div class="soap-label">Análisis</div>
+        <div class="soap-text pending">⏳ Procesando LLM...</div>
+      </div>
+      <div class="soap-box">
+        <div class="soap-letter">P</div>
+        <div class="soap-label">Plan</div>
+        <div class="soap-text pending">⏳ Pendiente dictado...</div>
+      </div>
+    </div>
+  </div>
 
-                <a-entity id="sec1" visible="false">
-                    <a-text value="HISTORIAL MEDICO" color="#76ff03" position="-0.9 0.4 0.06" width="3"></a-text>
-                    <a-text value="Saturacion: 94%\nFC: 72 bpm\nAlergias: PENICILINA" position="-0.9 0 0.06" width="2.5"></a-text>
-                </a-entity>
+  <!-- SCREEN 3: Imagen -->
+  <div class="screen" id="s3">
+    <div class="panel" style="display:flex;justify-content:space-between;align-items:center;">
+      <div class="panel-title" style="margin:0;">🫁 Rx Tórax PA — 12/03/2026</div>
+      <div style="font-family:'Share Tech Mono';font-size:11px;color:var(--cyan);">ZOOM: 100%</div>
+    </div>
+    <div class="xray-box">
+      <div class="xray-label">
+        <span>🫁</span>
+        Radiografía Tórax PA<br>
+        <span style="font-size:10px;color:var(--cyan);">Pinza: zoom · Muñeca: rotar</span>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Hallazgos</div>
+      <div class="finding warn">⚠ Opacidad residual LID<div class="finding-detail">Compatible con resolución de neumonía.</div></div>
+      <div class="finding ok">✓ Silueta cardíaca normal<div class="finding-detail">ICT dentro de límites.</div></div>
+      <div class="finding ok">✓ Senos costofrénicos libres</div>
+    </div>
+    <div class="panel">
+      <div class="panel-title">Acciones</div>
+      <div class="finding" style="color:var(--cyan);cursor:pointer;">📎 Adjuntar a informe</div>
+      <div class="finding" style="color:var(--cyan);cursor:pointer;">🎤 Dictar hallazgo</div>
+      <div class="finding" style="color:var(--green);cursor:pointer;" onclick="goTo(1)">← Volver al historial</div>
+    </div>
+  </div>
+</div>
 
-                <a-entity id="sec2" visible="false">
-                    <a-text value="VISOR RADIOLOGICO" color="#ffab00" position="-0.9 0.4 0.06" width="3"></a-text>
-                    <a-plane color="#111" width="1" height="0.6" position="0 -0.1 0.07">
-                        <a-text value="[ RX TORAX ]" align="center" width="2"></a-text>
-                    </a-plane>
-                </a-entity>
+<div class="bottom-nav" id="nav" style="display:none;">
+  <button class="nav-btn active" id="nb0" onclick="goTo(0)">Pacientes</button>
+  <button class="nav-btn" id="nb1" onclick="goTo(1)">Historial</button>
+  <button class="nav-btn" id="nb2" onclick="goTo(2)">Dictado</button>
+  <button class="nav-btn" id="nb3" onclick="goTo(3)">Imagen</button>
+</div>
 
-            </a-entity>
-        </a-marker>
+<script>
+async function startAR() {
+  document.getElementById('intro').classList.add('hidden');
+  document.getElementById('topbar').style.display = '';
+  document.getElementById('nav').style.display = '';
+  document.getElementById('marker-status').style.display = '';
 
-        <a-entity camera></a-entity>
-    </a-scene>
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({
+      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
+    });
+    const video = document.getElementById('camera');
+    video.srcObject = stream;
+    video.play();
 
-    <script>
-        function cambiar(id) {
-            for(let i=0; i<3; i++) {
-                document.getElementById('sec'+i).setAttribute('visible', i === id);
-            }
-        }
-    </script>
+    // Show HUD after short delay (simulating marker detection)
+    setTimeout(() => {
+      document.getElementById('hud').classList.add('visible');
+      const ms = document.getElementById('marker-status');
+      ms.textContent = '● Marcador detectado';
+      ms.className = 'marker-status found';
+    }, 1500);
+
+  } catch (err) {
+    // If camera fails, still show HUD over black background
+    document.getElementById('hud').classList.add('visible');
+    const ms = document.getElementById('marker-status');
+    ms.textContent = '⚠ Cámara no disponible — modo demo';
+    ms.className = 'marker-status searching';
+  }
+}
+
+function goTo(index) {
+  for (let i = 0; i < 4; i++) {
+    document.getElementById('s' + i).classList.remove('active');
+    document.getElementById('nb' + i).classList.remove('active');
+  }
+  document.getElementById('s' + index).classList.add('active');
+  document.getElementById('nb' + index).classList.add('active');
+}
+</script>
 </body>
 </html>
