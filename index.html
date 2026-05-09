@@ -104,7 +104,15 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 .corner-br { bottom:0;right:0; border-width:0 2px 2px 0; border-radius:0 0 6px 0; }
 
 /* Screen panels */
-.screen { display:none; height:100%; overflow-y:auto; padding:8px; }
+.screen { 
+  display:none; 
+  height:100%; 
+  overflow-y:auto; 
+  padding:8px; 
+  pointer-events: auto;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
+}
 .screen.active { display:flex; flex-direction:column; gap:8px; overflow-y:auto; max-height:70vw; -webkit-overflow-scrolling:touch; touch-action:pan-y; }
 
 /* Shared panel style */
