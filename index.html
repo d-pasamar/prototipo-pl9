@@ -180,7 +180,7 @@
   renderer="logarithmicDepthBuffer: true; antialias: true;"
   vr-mode-ui="enabled: false"
   id="arscene"
-  style="display:none;"
+  style="opacity: 0;"
 >
   <a-marker preset="hiro" id="marker">
 
@@ -319,10 +319,18 @@
 <script>
 function startAR() {
   document.getElementById('intro').classList.add('hidden');
-  document.getElementById('arscene').style.display = '';
+
+  // En lugar de display, cambiamos la opacidad y forzamos el redimensionado
+  const scene = document.getElementById('arscene');
+  scene.style.opacity = "1";
+ 
+  // document.getElementById('arscene').style.display = '';
   document.getElementById('topbar').style.display = '';
   document.getElementById('nav').style.display = '';
   document.getElementById('ghint').style.display = '';
+
+  // Truco para móviles: avisar al navegador que el tamaño ha cambiado
+  window.dispatchEvent(new Event('resize'));
 }
 
 let currentPanel = 0;
