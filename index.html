@@ -337,16 +337,7 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
   pointer-events:auto;
 }
 
-.image-proj-inner {
-  width:100%;
-  height:100%;
-  background:linear-gradient(145deg,
-    rgba(0,25,45,0.88),
-    rgba(0,50,70,0.65));
-  border:1px solid var(--cyan);
-  border-radius:12px;
-  ...
-}
+
 </style>
 </head>
 <body>
@@ -355,38 +346,7 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 <canvas id="detect-canvas"></canvas>
 <div class="scanline"></div>
 
-  <!-- Image projection (right side) -->
-<div class="image-projection" id="img-proj">
-  <div class="image-proj-inner">
-
-    <div class="proj-header">
-      <span>🫁 Rx Tórax PA · 12/03/2026</span>
-
-      <button class="proj-close"
-              onclick="closeProjection()">
-        ✕ CERRAR
-      </button>
-    </div>
-
-    <div class="proj-body">
-
-      <div class="proj-lung">🫁</div>
-
-      <div class="proj-grid">
-        <div class="proj-quadrant">LSD</div>
-        <div class="proj-quadrant">LSI</div>
-        <div class="proj-quadrant highlight">LID</div>
-        <div class="proj-quadrant">LII</div>
-      </div>
-
-      <div class="proj-info">
-        ⚠ Opacidad residual en LID señalizada
-      </div>
-
-    </div>
-  </div>
-</div>
-  
+ 
 
 <!-- Image projection (right side) -->
 <div class="image-projection" id="img-proj">
@@ -606,58 +566,114 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 </div>
 
 <script>
+
+let projZoomLevel = 100;
+
 async function startAR() {
-  document.getElementById('intro').classList.add('hidden');
-  document.getElementById('topbar').style.display = '';
-  document.getElementById('marker-status').style.display = '';
+
+  document.getElementById('intro')
+    .classList.add('hidden');
+
+  document.getElementById('topbar')
+    .style.display = '';
+
+  document.getElementById('marker-status')
+    .style.display = '';
 
   try {
-    const stream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: 'environment', width: { ideal: 1280 }, height: { ideal: 720 } }
-    });
-    const video = document.getElementById('camera');
+
+    const stream =
+      await navigator.mediaDevices.getUserMedia({
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        }
+      });
+
+    const video =
+      document.getElementById('camera');
+
     video.srcObject = stream;
+
     video.play();
 
     if (document.documentElement.requestFullscreen) {
       document.documentElement.requestFullscreen();
-    } else if (document.documentElement.webkitRequestFullscreen) {
-      document.documentElement.webkitRequestFullscreen();
     }
 
     setTimeout(() => {
-      document.getElementById('hud').classList.add('visible');
-      document.getElementById('vitals-hud').classList.add('visible');
-      document.getElementById('crosshair').classList.add('visible');
-      const ms = document.getElementById('marker-status');
+
+      document.getElementById('hud')
+        .classList.add('visible');
+
+      document.getElementById('vitals-hud')
+        .classList.add('visible');
+
+      document.getElementById('crosshair')
+        .classList.add('visible');
+
+      const ms =
+        document.getElementById('marker-status');
+
       ms.textContent = '● AR activo';
+
       ms.className = 'marker-status found';
+
     }, 1200);
 
   } catch (err) {
-    document.getElementById('hud').classList.add('visible');
-    document.getElementById('vitals-hud').classList.add('visible');
-    document.getElementById('crosshair').classList.add('visible');
-    const ms = document.getElementById('marker-status');
+
+    document.getElementById('hud')
+      .classList.add('visible');
+
+    document.getElementById('vitals-hud')
+      .classList.add('visible');
+
+    document.getElementById('crosshair')
+      .classList.add('visible');
+
+    const ms =
+      document.getElementById('marker-status');
+
     ms.textContent = '⚠ Modo demo';
+
     ms.className = 'marker-status searching';
   }
 }
 
 function goTo(index) {
-  let projZoomLevel = 100;
+
+  for (let i = 0; i < 4; i++) {
+
+    document.getElementById('s' + i)
+      .classList.remove('active');
+
+    document.getElementById('nb' + i)
+      .classList.remove('active');
+  }
+
+  document.getElementById('s' + index)
+    .classList.add('active');
+
+  document.getElementById('nb' + index)
+    .classList.add('active');
+}
 
 function openProjection() {
+
   document.getElementById('img-proj')
     .classList.add('visible');
 }
 
 function closeProjection() {
+
   document.getElementById('img-proj')
     .classList.remove('visible');
 }
 
 function projZoom(delta) {
+
   projZoomLevel += delta;
 
   if (projZoomLevel < 50)
@@ -675,13 +691,7 @@ function projZoom(delta) {
   inner.style.transform =
     `scale(${projZoomLevel / 100})`;
 }
-  for (let i = 0; i < 4; i++) {
-    document.getElementById('s' + i).classList.remove('active');
-    document.getElementById('nb' + i).classList.remove('active');
-  }
-  document.getElementById('s' + index).classList.add('active');
-  document.getElementById('nb' + index).classList.add('active');
-}
+
 </script>
 </body>
 </html>
