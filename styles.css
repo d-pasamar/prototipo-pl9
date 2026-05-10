@@ -98,15 +98,23 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 /* ===== SCREENS ===== */
 .screen {
   display:none;
-  padding:8px;
   pointer-events:auto;
   overflow-y:auto;
   touch-action:pan-y;
   flex:1;
   min-height:0;
 }
-.screen.active { display:flex; flex-direction:column; gap:6px; }
-.screen > * { flex-shrink:0; }
+.screen.active {
+  display:block;
+  padding:8px;
+}
+.screen.active > * {
+  display:block;
+  margin-bottom:6px;
+}
+.screen.active > *:last-child {
+  margin-bottom:0;
+}
 
 /* ===== SHARED PANEL ===== */
 .panel {
