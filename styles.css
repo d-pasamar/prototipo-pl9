@@ -106,6 +106,7 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
   min-height:0;
 }
 .screen.active { display:flex; flex-direction:column; gap:6px; }
+.screen > * { flex-shrink:0; }
 
 /* ===== SHARED PANEL ===== */
 .panel {
@@ -338,4 +339,11 @@ body { overflow:hidden; background:#000; font-family:'Rajdhani',sans-serif; colo
 
 @media (orientation: portrait) {
   .intro-box p::after { content: '\A\A\1F4F1 Gira el movil en horizontal.'; white-space: pre-wrap; color: var(--amber); }
+}
+
+@media (max-height: 480px) {
+  .xray-box { height: 75px; }
+  .panel { padding: 6px 8px; }
+  .panel-nav { padding: 4px 8px; }
+  .nav-btn { padding: 3px 4px; }
 }
